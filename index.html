@@ -411,7 +411,12 @@
         if (data.status === "success") {
             allStudents = data.data;
             currentConfig = data.config;
-            const classes = [...new Set(allStudents.map(s => s.Kelas))].sort();
+            
+            // Dapatkan senarai kelas unik
+            const classSet = new Set();
+            allStudents.forEach(s => { if(s.Kelas) classSet.add(s.Kelas.toString()); });
+            const classes = Array.from(classSet).sort();
+            
             document.getElementById('classFilter').innerHTML = '<option value="">Semua Kelas</option>' + classes.map(k => `<option value="${k}">${k}</option>`).join('');
             renderList();
             renderSummaryTable();
