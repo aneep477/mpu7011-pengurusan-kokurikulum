@@ -398,10 +398,14 @@
         if (data.status === "success") {
             allStudents = data.data;
             currentConfig = data.config;
+            
+            // PERBAIKAN: Buang dropdown bertindih, set innerHTML sekali sahaja
             const classSet = new Set();
             allStudents.forEach(s => { if(s.Kelas) classSet.add(s.Kelas.toString()); });
             const classes = Array.from(classSet).sort();
+            
             document.getElementById('classFilter').innerHTML = '<option value="">Semua Kelas</option>' + classes.map(k => `<option value="${k}">${k}</option>`).join('');
+            
             renderList();
             renderSummaryTable();
         }
@@ -411,8 +415,9 @@
         const q = document.getElementById('searchStudent').value.toLowerCase();
         const c = document.getElementById('classFilter').value;
         const filtered = allStudents.filter(s => (s.Nama_Pelajar.toLowerCase().includes(q) || s.No_KP.includes(q)) && (!c || s.Kelas === c));
+        
+        // PERBAIKAN: Tambah gambar pada kad pelajar
         document.getElementById('sList').innerHTML = filtered.map(s => {
-            // Semak jika gambar wujud
             let imgUrl = "https://ui-avatars.com/api/?name=" + encodeURIComponent(s.Nama_Pelajar) + "&background=e2e8f0&color=64748b";
             if(s.Link_Gambar && s.Link_Gambar.trim() !== "") imgUrl = s.Link_Gambar;
 
@@ -442,7 +447,7 @@
         document.getElementById('ln').textContent = selectedStudent.Nama_Pelajar;
         document.getElementById('lk').textContent = `${selectedStudent.Kelas} | Kumpulan ${selectedStudent.Kumpulan || '-'}`;
         
-        // Bina Kad Markah Dinamik (Susunan JST Asal)
+        // PERBAIKAN: Bina Kad Markah Dinamik (Susunan JST Asal)
         const container = document.getElementById('dynamicScoreContainer');
         container.innerHTML = '';
         currentConfig.forEach(t => {
