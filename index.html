@@ -27,10 +27,12 @@
         .btn-outline { background: transparent; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px; }
         .btn-outline:hover { border-color: var(--primary); color: var(--primary); background: #f8fafc; }
 
-        .s-card { padding: 12px 14px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 0.5rem; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; border-left: 4px solid transparent; }
+        .s-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 0.5rem; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; border-left: 4px solid transparent; }
         .s-card:hover { background: var(--bg-alt); border-left-color: #94a3b8; }
         .s-card.selected { background: #eff6ff; border-left-color: var(--primary); }
         .s-card.done { border-left-color: #10b981; }
+        
+        .s-img { width: 40px; height: 50px; border-radius: 4px; object-fit: cover; background: #e2e8f0; flex-shrink: 0; border: 1px solid #cbd5e1; }
 
         .nav-btn { background:transparent; border:none; padding:10px 16px; font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; border-bottom:3px solid transparent; cursor:pointer; white-space:nowrap; }
         .nav-btn.active { color:var(--primary); border-bottom-color:var(--primary); }
@@ -76,7 +78,6 @@
     </div>
     <div class="p-6 max-w-5xl mx-auto w-full">
         
-        <!-- PROFIL & GAMBAR -->
         <div class="academic-card p-6 mb-6 flex flex-col md:flex-row gap-6 items-start">
             <div class="w-full md:w-48 flex flex-col items-center shrink-0">
                 <div class="w-40 h-52 bg-slate-100 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden relative mb-3">
@@ -106,15 +107,11 @@
                 <div class="grid grid-cols-2 gap-4 items-end">
                     <div class="bg-slate-50 p-4 rounded-lg border">
                         <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">Kumpulan (1-15)</div>
-                        <select id="selKumpulan" class="w-full text-sm font-bold bg-white border rounded-lg p-2">
-                            <!-- Pilihan dijana oleh JS -->
-                        </select>
+                        <select id="selKumpulan" class="w-full text-sm font-bold bg-white border rounded-lg p-2"></select>
                     </div>
                     <div class="bg-slate-50 p-4 rounded-lg border">
                         <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">No. Dalam Kumpulan (1-20)</div>
-                        <select id="selNoKumpulan" class="w-full text-sm font-bold bg-white border rounded-lg p-2">
-                            <!-- Pilihan dijana oleh JS -->
-                        </select>
+                        <select id="selNoKumpulan" class="w-full text-sm font-bold bg-white border rounded-lg p-2"></select>
                     </div>
                 </div>
                 <div class="mt-4 flex justify-end">
@@ -123,7 +120,6 @@
             </div>
         </div>
 
-        <!-- PENILAIAN RAKAN -->
         <div class="academic-card p-6">
             <h3 class="font-bold text-lg text-slate-800 mb-2 border-b pb-2">Penilaian Rakan Sekumpulan (HP8)</h3>
             <p class="text-xs text-slate-500 mb-6">Berikan markah 1 (Sangat Lemah) hingga 5 (Sangat Cemerlang) berdasarkan kriteria rubrik.</p>
@@ -153,7 +149,7 @@
         </div>
     </div>
 
-    <div class="p-6 grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 flex-1">
+    <div class="p-6 grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6 flex-1">
         <div class="academic-card p-4 sticky top-24 self-start max-h-[calc(100vh-120px)] flex flex-col">
             <div class="text-xs font-bold uppercase mb-3 text-slate-700">Senarai Pelajar</div>
             <select id="classFilter" onchange="filterStudents()" class="w-full text-xs font-bold bg-slate-50 border rounded mb-2">
@@ -164,7 +160,6 @@
         </div>
 
         <div class="min-w-0">
-            <!-- PEMARKAHAN -->
             <div id="ltab-marking">
                 <div id="gradingEmpty" class="academic-card p-12 text-center border-dashed border-2 bg-slate-50 min-h-[400px] flex items-center justify-center">
                     <div class="text-slate-400">
@@ -179,17 +174,16 @@
                         <p id="lk" class="text-xs text-slate-500 font-mono-score mt-1">--</p>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6" id="dynamicScoreContainer"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6" id="dynamicScoreContainer"></div>
 
                     <div class="academic-card p-5 bg-slate-900 text-white flex justify-between items-center mb-6">
                         <div class="text-sm uppercase tracking-wider">Jumlah Keseluruhan</div>
-                        <div class="text-4xl font-mono-score text-blue-400"><span id="totalScore">0.0</span> <span class="text-lg text-slate-400">/ 60</span></div>
+                        <div class="text-4xl font-mono-score text-blue-400"><span id="totalScore">0.0</span> <span class="text-lg text-slate-400">/ 100</span></div>
                     </div>
                     <button class="btn-primary w-full py-3.5 rounded-lg text-xs" onclick="simulateSave(event)">Simpan Markah</button>
                 </div>
             </div>
 
-            <!-- RADAR RAKAN -->
             <div id="ltab-peer" style="display:none;">
                 <div id="peerEmpty" class="academic-card p-12 text-center border-dashed border-2 bg-slate-50 min-h-[400px] flex items-center justify-center">
                     <div class="text-slate-400">
@@ -210,7 +204,6 @@
                 </div>
             </div>
 
-            <!-- REKOD PRESTASI -->
             <div id="ltab-summary" style="display:none;">
                 <div class="academic-card p-6">
                     <h3 class="font-serif-title text-lg font-bold mb-4 border-b pb-3">Buku Rekod Prestasi MPU7011</h3>
@@ -262,13 +255,11 @@
                 document.getElementById('sK').textContent = `KP: ${currentUser.No_KP}`;
                 document.getElementById('sC').textContent = currentUser.Kelas;
                 
-                // Isi Dropdown Kumpulan
                 let selK = document.getElementById('selKumpulan');
                 selK.innerHTML = '<option value="">Pilih Kumpulan</option>';
                 for(let i=1; i<=15; i++) selK.innerHTML += `<option value="${i}">Kumpulan ${i}</option>`;
                 if(currentUser.Kumpulan && currentUser.Kumpulan !== '-') selK.value = currentUser.Kumpulan;
 
-                // Isi Dropdown No Dalam Kumpulan
                 let selNo = document.getElementById('selNoKumpulan');
                 selNo.innerHTML = '<option value="">Pilih No.</option>';
                 for(let i=1; i<=20; i++) selNo.innerHTML += `<option value="${i}">No. ${i}</option>`;
@@ -302,7 +293,6 @@
         }
     }
 
-    // FUNGSI SIMPAN KUMPULAN (PELAJAR)
     async function saveKumpulan() {
         const kumpulan = document.getElementById('selKumpulan').value;
         const noKumpulan = document.getElementById('selNoKumpulan').value;
@@ -314,7 +304,7 @@
         const payload = { 
             action: "updateStudentGroup", 
             noKP: currentUser.No_KP, 
-            kelas: currentUser.Kelas, // Hantar kelas untuk semakan pertindihan
+            kelas: currentUser.Kelas,
             kumpulan: kumpulan, 
             noKumpulan: noKumpulan 
         };
@@ -326,7 +316,7 @@
                 alert("Kumpulan berjaya disimpan!");
                 currentUser.Kumpulan = kumpulan;
                 currentUser.No_Dalam_Kumpulan = noKumpulan;
-                loadPeerGroup(); // Muat semula senarai rakan
+                loadPeerGroup();
             } else {
                 alert("Ralat: " + result.message);
             }
@@ -334,7 +324,6 @@
         btn.disabled = false; btn.innerHTML = '<i class="fas fa-save me-1"></i> Simpan Kumpulan';
     }
 
-    // --- PELAJAR UPLOAD ---
     function pImg(input) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
@@ -370,7 +359,6 @@
         reader.readAsDataURL(file);
     }
 
-    // --- PELAJAR PEER EVAL ---
     async function loadPeerGroup() {
         const res = await fetch(`${API}?action=getPeerGroups&kelas=${encodeURIComponent(currentUser.Kelas)}&kumpulan=${encodeURIComponent(currentUser.Kumpulan)}&noKP=${encodeURIComponent(currentUser.No_KP)}`);
         const data = await res.json();
@@ -404,19 +392,15 @@
         btn.className = 'w-10 h-10 rounded-md border border-blue-900 font-bold bg-blue-900 text-white';
     }
 
-    // --- PENSYARAH ---
     async function fetchStudents() {
         const res = await fetch(`${API}?action=getLecturerStudents&email=${encodeURIComponent(currentLecturerEmail)}`);
         const data = await res.json();
         if (data.status === "success") {
             allStudents = data.data;
             currentConfig = data.config;
-            
-            // Dapatkan senarai kelas unik
             const classSet = new Set();
             allStudents.forEach(s => { if(s.Kelas) classSet.add(s.Kelas.toString()); });
             const classes = Array.from(classSet).sort();
-            
             document.getElementById('classFilter').innerHTML = '<option value="">Semua Kelas</option>' + classes.map(k => `<option value="${k}">${k}</option>`).join('');
             renderList();
             renderSummaryTable();
@@ -427,12 +411,21 @@
         const q = document.getElementById('searchStudent').value.toLowerCase();
         const c = document.getElementById('classFilter').value;
         const filtered = allStudents.filter(s => (s.Nama_Pelajar.toLowerCase().includes(q) || s.No_KP.includes(q)) && (!c || s.Kelas === c));
-        document.getElementById('sList').innerHTML = filtered.map(s => `
+        document.getElementById('sList').innerHTML = filtered.map(s => {
+            // Semak jika gambar wujud
+            let imgUrl = "https://ui-avatars.com/api/?name=" + encodeURIComponent(s.Nama_Pelajar) + "&background=e2e8f0&color=64748b";
+            if(s.Link_Gambar && s.Link_Gambar.trim() !== "") imgUrl = s.Link_Gambar;
+
+            return `
             <div class="s-card ${s.markahSediaAda?'done':''}" onclick="selectStudent('${s.No_KP}', event)">
-                <div class="font-bold text-xs text-slate-800">${s.Nama_Pelajar}</div>
-                <div class="text-[10px] text-slate-500 font-mono-score mt-0.5">${s.Kelas} • Kumpulan ${s.Kumpulan || '-'}</div>
+                <img src="${imgUrl}" class="s-img" alt="Foto">
+                <div style="flex:1; min-width:0;">
+                    <div class="font-bold text-[11px] text-slate-800 leading-tight">${s.Nama_Pelajar}</div>
+                    <div class="text-[9px] text-slate-500 font-mono-score mt-1">${s.Kelas} • Kump. ${s.Kumpulan || '-'}</div>
+                </div>
             </div>
-        `).join('') || `<div class="text-xs text-center text-slate-400 p-4">Tiada pelajar.</div>`;
+            `;
+        }).join('') || `<div class="text-xs text-center text-slate-400 p-4">Tiada pelajar.</div>`;
     }
 
     function filterStudents() { renderList(); }
@@ -449,22 +442,30 @@
         document.getElementById('ln').textContent = selectedStudent.Nama_Pelajar;
         document.getElementById('lk').textContent = `${selectedStudent.Kelas} | Kumpulan ${selectedStudent.Kumpulan || '-'}`;
         
-        // Bina Kad Markah Dinamik
+        // Bina Kad Markah Dinamik (Susunan JST Asal)
         const container = document.getElementById('dynamicScoreContainer');
         container.innerHTML = '';
         currentConfig.forEach(t => {
+            let inputsHtml = '';
             t.hppList.forEach(hpp => {
                 const val = selectedStudent.markahSediaAda?.scores[hpp.id] || '';
-                container.innerHTML += `
+                inputsHtml += `
                     <div class="score-row" style="border-left-color: #3b82f6;">
                         <div>
-                            <div class="font-bold text-sm">${hpp.nama}</div>
+                            <div class="font-bold text-xs">${hpp.nama}</div>
                             <div class="text-[10px] text-slate-500">Max: ${hpp.max}</div>
                         </div>
                         <input type="number" id="score_${hpp.id}" class="score-input" value="${val}" oninput="calcTotal()">
                     </div>
                 `;
             });
+            
+            container.innerHTML += `
+                <div class="academic-card p-4">
+                    <h4 class="font-bold text-sm text-center mb-3 text-slate-700 border-b pb-2">${t.nama}</h4>
+                    ${inputsHtml}
+                </div>
+            `;
         });
         calcTotal();
 
@@ -516,7 +517,6 @@
         btn.disabled = false; btn.textContent = 'Simpan Markah';
     }
 
-    // --- RADAR & REKOD ---
     async function loadPeerRadar(kp, nama) {
         document.getElementById('peerEmpty').style.display = 'none';
         document.getElementById('peerPanel').style.display = 'block';
@@ -549,7 +549,7 @@
     function renderSummaryTable() {
         let headers = `<tr><th class="text-left">Nama Pelajar</th><th>Kelas</th>`;
         currentConfig.forEach(t => { t.hppList.forEach(hpp => { headers += `<th>${hpp.kod} (${hpp.max})</th>`; }); });
-        headers += `<th class="bg-slate-200">Jumlah (60)</th><th class="bg-slate-200">Gred</th></tr>`;
+        headers += `<th class="bg-slate-200">Jumlah</th><th class="bg-slate-200">Gred</th></tr>`;
         document.getElementById('summaryHeader').innerHTML = headers;
 
         document.getElementById('summaryBody').innerHTML = allStudents.map(s => {
