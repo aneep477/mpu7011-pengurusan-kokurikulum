@@ -52,7 +52,6 @@
 <div id="loginScreen" class="flex items-center justify-center min-h-screen p-6">
     <div class="academic-card w-full shadow-2xl p-8 sm:p-10 border-t-4" style="max-width:440px; border-top-color: var(--primary);">
         <div class="text-center mb-8">
-            <!-- LOGO GOOGLE DRIVE -->
             <img src="https://lh3.googleusercontent.com/d/193WbeDf4HQnBBqOwc7JMAriBJFT7Fhdt" alt="Logo IPGKDA" class="h-20 mx-auto mb-4 object-contain">
             <h1 class="font-serif-title text-2xl font-bold text-slate-800">Portal Pemarkahan</h1>
             <p class="text-xs text-slate-500 font-medium mt-1">MPU7011 — Pengurusan Kokurikulum</p>
@@ -104,15 +103,22 @@
                         <div id="sC" class="font-bold text-blue-900">--</div>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-4 items-end">
                     <div class="bg-slate-50 p-4 rounded-lg border">
-                        <div class="text-[10px] font-bold text-slate-400 uppercase">Kumpulan</div>
-                        <div id="sKumpulan" class="font-bold text-lg text-blue-900">--</div>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">Kumpulan (1-15)</div>
+                        <select id="selKumpulan" class="w-full text-sm font-bold bg-white border rounded-lg p-2">
+                            <!-- Pilihan dijana oleh JS -->
+                        </select>
                     </div>
                     <div class="bg-slate-50 p-4 rounded-lg border">
-                        <div class="text-[10px] font-bold text-slate-400 uppercase">No. Dalam Kumpulan</div>
-                        <div id="sNoKumpulan" class="font-bold text-lg text-blue-900">--</div>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">No. Dalam Kumpulan (1-20)</div>
+                        <select id="selNoKumpulan" class="w-full text-sm font-bold bg-white border rounded-lg p-2">
+                            <!-- Pilihan dijana oleh JS -->
+                        </select>
                     </div>
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <button onclick="saveKumpulan()" id="btnSaveKumpulan" class="btn-primary px-4 py-2 rounded-lg text-xs"><i class="fas fa-save me-1"></i> Simpan Kumpulan</button>
                 </div>
             </div>
         </div>
@@ -255,8 +261,18 @@
                 document.getElementById('sN').textContent = currentUser.Nama_Pelajar;
                 document.getElementById('sK').textContent = `KP: ${currentUser.No_KP}`;
                 document.getElementById('sC').textContent = currentUser.Kelas;
-                document.getElementById('sKumpulan').textContent = currentUser.Kumpulan || '-';
-                document.getElementById('sNoKumpulan').textContent = currentUser.No_Dalam_Kumpulan || '-';
+                
+                // Isi Dropdown Kumpulan
+                let selK = document.getElementById('selKumpulan');
+                selK.innerHTML = '<option value="">Pilih Kumpulan</option>';
+                for(let i=1; i<=15; i++) selK.innerHTML += `<option value="${i}">Kumpulan ${i}</option>`;
+                if(currentUser.Kumpulan && currentUser.Kumpulan !== '-') selK.value = currentUser.Kumpulan;
+
+                // Isi Dropdown No Dalam Kumpulan
+                let selNo = document.getElementById('selNoKumpulan');
+                selNo.innerHTML = '<option value="">Pilih No.</option>';
+                for(let i=1; i<=20; i++) selNo.innerHTML += `<option value="${i}">No. ${i}</option>`;
+                if(currentUser.No_Dalam_Kumpulan && currentUser.No_Dalam_Kumpulan !== '-') selNo.value = currentUser.No_Dalam_Kumpulan;
                 
                 if (currentUser.Link_Gambar) {
                     const img = document.getElementById('sImg');
@@ -264,7 +280,13 @@
                     img.style.display = 'block';
                     document.getElementById('sPl').style.display = 'none';
                 }
-                loadPeerGroup();
+                
+                if(currentUser.Kumpulan && currentUser.Kumpulan !== '-') {
+                    loadPeerGroup();
+                } else {
+                    document.getElementById('peerListContainer').innerHTML = `<div class="text-xs text-amber-600 font-bold">Sila pilih dan simpan Kumpulan anda terlebih dahulu untuk melihat senarai rakan.</div>`;
+                }
+                
             } else alert(data.message);
         } else {
             if(!pw) return alert("Sila masukkan kata laluan.");
@@ -278,6 +300,29 @@
                 fetchStudents();
             } else alert(data.message);
         }
+    }
+
+    // FUNGSI SIMPAN KUMPULAN (PELAJAR)
+    async function saveKumpulan() {
+        const kumpulan = document.getElementById('selKumpulan').value;
+        const noKumpulan = document.getElementById('selNoKumpulan').value;
+        if(!kumpulan || !noKumpulan) return alert("Sila pilih Kumpulan dan No. Dalam Kumpulan.");
+
+        const btn = document.getElementById('btnSaveKumpulan');
+        btn.disabled = true; btn.innerHTML = 'Menyimpan...';
+
+        const payload = { action: "updateStudentGroup", noKP: currentUser.No_KP, kumpulan: kumpulan, noKumpulan: noKumpulan };
+        try {
+            const res = await fetch(API, { method: "POST", body: JSON.stringify(payload) });
+            const result = await res.json();
+            if(result.status === "success") {
+                alert("Kumpulan berjaya disimpan!");
+                currentUser.Kumpulan = kumpulan;
+                currentUser.No_Dalam_Kumpulan = noKumpulan;
+                loadPeerGroup();
+            } else alert("Ralat: " + result.message);
+        } catch(e) { alert("Gagal menyimpan kumpulan."); }
+        btn.disabled = false; btn.innerHTML = '<i class="fas fa-save me-1"></i> Simpan Kumpulan';
     }
 
     // --- PELAJAR UPLOAD ---
@@ -306,8 +351,10 @@
             try {
                 const res = await fetch(API, { method: "POST", body: JSON.stringify(payload) });
                 const result = await res.json();
-                if (result.status === "success") alert("Gambar dimuat naik!");
-                else alert("Ralat: " + result.message);
+                if (result.status === "success") {
+                    alert("Gambar dimuat naik!");
+                    document.getElementById('sImg').src = result.url;
+                } else alert("Ralat: " + result.message);
             } catch (err) { alert("Gagal memuat naik."); }
             btn.disabled = false; btn.textContent = 'Muat Naik';
         };
