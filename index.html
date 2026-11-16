@@ -488,7 +488,7 @@
 <div id="printArea"></div>
 
 <script>
-const API = "URL_APPS_SCRIPT_ANDA_DI_SINI"; // TUKAR URL INI KEPADA DEPLOYMENT ANDA
+const API = "https://script.google.com/macros/s/AKfycbzLoLwfXXUwdV9xlsyItCVWezdDxY225jAV0fOCloj_g5rnZP6QiwbdJGe7jj0ZgShcVw/exec";
 
 let mode = 'student';
 let currentUser = null;
@@ -668,12 +668,13 @@ function renderDynamicGradingCards() {
     const container = document.getElementById('dynamicMarkingCards');
     if (!container) return;
 
+    // Logik Susunan: Tugasan 1 (Ujian), Tugasan 2 (Penganjuran), Tugasan 3 (Penulisan)
     container.innerHTML = currentConfig.map((t) => {
         let tMax = t.hppList.reduce((sum, h) => sum + Number(h.max), 0);
         let inputs = t.hppList.map(hpp => `
             <div class="mb-3 flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100">
                 <div>
-                    <label class="dim-label mb-0 text-blue-800">${hpp.name}</label>
+                    <label class="dim-label mb-0 text-blue-800">${hpp.nama}</label>
                     <span class="text-[10px] text-slate-400">Maksimum HPP: ${hpp.max}m</span>
                 </div>
                 <input type="number" id="inp_${hpp.id}" min="0" max="${hpp.max}" step="0.1"
