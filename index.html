@@ -65,11 +65,37 @@
         .fade-in { animation: fadeIn 0.3s ease forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
+        #printArea { display: none; }
+        @page { size: A4 portrait; margin: 12mm; }
         @media print {
-            body * { visibility: hidden; }
-            #printArea, #printArea * { visibility: visible; }
-            #printArea { position: absolute; left: 0; top: 0; width: 100%; }
+            body { background: #fff !important; min-height: 0 !important; }
+            body > *:not(#printArea) { display: none !important; }
+            #printArea { display: block !important; }
+            .p-page { page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid; }
+            .p-page:last-child { page-break-after: auto; break-after: auto; }
+            .p-table tr { page-break-inside: avoid; break-inside: avoid; }
+            .p-table thead { display: table-header-group; }
+            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
+        #printArea { font-family: 'Plus Jakarta Sans', Arial, sans-serif; color: #000; }
+        .p-head { display: flex; align-items: center; gap: 14px; border-bottom: 2.5px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 14px; }
+        .p-head img { height: 72px; width: auto; object-fit: contain; }
+        .p-head .t1 { font-size: 15px; font-weight: 800; letter-spacing: .03em; }
+        .p-head .t2 { font-size: 11px; font-weight: 700; color: #1e3a8a; margin-top: 2px; }
+        .p-head .t3 { font-size: 10px; color: #475569; margin-top: 2px; }
+        .p-info { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 14px; }
+        .p-info td { border: 1px solid #94a3b8; padding: 5px 8px; }
+        .p-info td.k { background: #f1f5f9; font-weight: 700; width: 18%; text-transform: uppercase; font-size: 9.5px; }
+        .p-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .p-table th, .p-table td { border: 1px solid #94a3b8; padding: 5px 8px; }
+        .p-table th { background: #1e3a8a; color: #fff; font-size: 9.5px; text-transform: uppercase; }
+        .p-table td.c, .p-table th.c { text-align: center; }
+        .p-table tr.sub td { background: #f1f5f9; font-weight: 700; }
+        .p-table tr.tot td { background: #e2e8f0; font-weight: 800; font-size: 12.5px; }
+        .p-sign { display: flex; justify-content: space-between; gap: 40px; margin-top: 46px; font-size: 10.5px; }
+        .p-sign > div { flex: 1; }
+        .p-sign .ln { border-top: 1px solid #000; margin-top: 48px; padding-top: 4px; }
+        .p-foot { margin-top: 16px; font-size: 8.5px; color: #64748b; text-align: right; }
     </style>
 </head>
 <body oncontextmenu="return false;">
@@ -339,13 +365,25 @@
                     <div class="flex justify-between items-center mb-4 flex-wrap gap-3 border-b pb-3">
                         <h3 class="font-serif-title text-xl font-bold text-slate-800">Buku Rekod Pemarkahan MPU7011</h3>
                         <div class="flex items-center gap-2">
+                            <select id="summaryClassFilter" onchange="loadSummary()" class="text-xs font-bold border rounded p-1.5 bg-slate-50 min-w-[150px]">
+                                <option value="">Semua Kelas</option>
+                            </select>
                             <select id="summarySortBy" onchange="loadSummary()" class="text-xs font-bold border rounded p-1.5 bg-slate-50">
                                 <option value="nama_asc">Susun: Nama (A-Z)</option>
                                 <option value="kelas_asc">Susun: Kelas (A-Z)</option>
                                 <option value="mark_desc">Susun: Markah (Tinggi ke Rendah)</option>
                                 <option value="mark_asc">Susun: Markah (Rendah ke Tinggi)</option>
                             </select>
-                            <button onclick="loadSummary()" class="btn-outline px-3 py-1.5"><i class="fas fa-sync me-1"></i> Segarkan</button>
+                            <button onclick="refreshData()" class="btn-outline px-3 py-1.5"><i class="fas fa-sync me-1"></i> Segarkan</button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between gap-2 flex-wrap mb-4 bg-slate-50 border rounded-lg p-3">
+                        <div class="text-xs text-slate-600">
+                            Paparan: <span id="summaryInfo" class="font-bold text-slate-800">--</span>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <button onclick="printClassRecord()" class="btn-outline px-3 py-1.5 bg-white"><i class="fas fa-table me-1"></i> Cetak Rekod Kelas</button>
+                            <button onclick="printBulkDossier()" class="btn-outline px-3 py-1.5 bg-indigo-50 text-indigo-700 border-indigo-200"><i class="fas fa-print me-1"></i> Cetak Dossier Pukal</button>
                         </div>
                     </div>
                     <div class="overflow-x-auto border rounded-lg">
@@ -672,7 +710,7 @@ async function initLec(silent) {
         const classes = Array.from(classSet).sort();
         const opts = '<option value="">Semua Kelas</option>' + classes.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join('');
 
-        ['classFilter', 'laporanClassFilter'].forEach(id => {
+        ['classFilter', 'laporanClassFilter', 'summaryClassFilter'].forEach(id => {
             const sel = document.getElementById(id);
             if (!sel) return;
             const prev = sel.value;
@@ -1106,43 +1144,72 @@ function loadModeration() {
     `).join('') || `<tr><td colspan="7" class="p-4 text-slate-400">Tiada sampel moderasi. Markah pelajar belum direkodkan.</td></tr>`;
 }
 
-function loadSummary() {
+/* Markah seorang pelajar mengikut tetapan HPP semasa */
+function studentMarks(s) {
+    const m = s.markahSediaAda || {};
+    const scores = m.scores || {};
+    let tot = 0, has = false;
+    currentConfig.forEach(t => t.hppList.forEach(h => {
+        if (scores[h.id] !== undefined && scores[h.id] !== '') { has = true; tot += Number(scores[h.id]) || 0; }
+    }));
+    tot = Math.round(tot * 10) / 10;
+    return { scores: scores, tot: tot, has: has, gred: has ? calcGred(tot) : '-', penilai: m.penilai || '' };
+}
+
+/* Senarai pelajar Rekod Prestasi selepas penapis kelas + susunan */
+function getSummaryRows() {
+    const kelas = document.getElementById('summaryClassFilter') ? document.getElementById('summaryClassFilter').value : '';
     const sortBy = document.getElementById('summarySortBy') ? document.getElementById('summarySortBy').value : 'nama_asc';
-    let sortedData = [...sData];
+    let rows = sData.filter(s => !kelas || String(s.Kelas === undefined || s.Kelas === null ? '' : s.Kelas) === kelas);
 
-    if (sortBy === 'nama_asc') sortedData.sort((a,b) => String(a.Nama_Pelajar||'').localeCompare(String(b.Nama_Pelajar||'')));
-    else if (sortBy === 'kelas_asc') sortedData.sort((a,b) => String(a.Kelas||'').localeCompare(String(b.Kelas||'')));
-    else if (sortBy === 'mark_desc') sortedData.sort((a,b) => ((b.markahSediaAda?.total||0) - (a.markahSediaAda?.total||0)));
-    else if (sortBy === 'mark_asc') sortedData.sort((a,b) => ((a.markahSediaAda?.total||0) - (b.markahSediaAda?.total||0)));
+    const byName = (a, b) => String(a.Nama_Pelajar || '').localeCompare(String(b.Nama_Pelajar || ''));
+    if (sortBy === 'nama_asc') rows.sort(byName);
+    else if (sortBy === 'kelas_asc') rows.sort((a, b) => String(a.Kelas || '').localeCompare(String(b.Kelas || '')) || byName(a, b));
+    else if (sortBy === 'mark_desc') rows.sort((a, b) => studentMarks(b).tot - studentMarks(a).tot);
+    else if (sortBy === 'mark_asc') rows.sort((a, b) => studentMarks(a).tot - studentMarks(b).tot);
+    return { rows: rows, kelas: kelas };
+}
 
-    const headerRow = `<tr>
+async function refreshData() {
+    await initLec(true);
+    showToast('Data terkini dimuat semula.');
+}
+
+function loadSummary() {
+    const { rows, kelas } = getSummaryRows();
+    const nCols = 5 + currentConfig.reduce((n, t) => n + t.hppList.length, 0);
+    const graded = rows.filter(s => studentMarks(s).has).length;
+
+    const info = document.getElementById('summaryInfo');
+    if (info) info.innerText = `${kelas || 'Semua Kelas'} — ${rows.length} pelajar, ${graded} telah dinilai`;
+
+    document.getElementById('summaryHeader').innerHTML = `<tr>
         <th class="text-left">Nama Pelajar</th>
-        ${currentConfig.map(t => t.hppList.map(h => `<th>${h.nama} (${h.max})</th>`).join('')).join('')}
+        <th class="text-left">Kelas</th>
+        ${currentConfig.map(t => t.hppList.map(h => `<th>${esc(h.nama)} (${h.max})</th>`).join('')).join('')}
         <th class="bg-slate-200 text-slate-800">JUMLAH (100)</th>
         <th class="bg-slate-200 text-slate-800">GRED (100%)</th>
+        <th>Cetak</th>
     </tr>`;
-    document.getElementById('summaryHeader').innerHTML = headerRow;
 
-    document.getElementById('summaryBody').innerHTML = sortedData.map(s => {
-        const m = s.markahSediaAda || {};
-        const scores = m.scores || {};
-        let tot = 0;
-
-        let cells = currentConfig.map(t => t.hppList.map(h => {
-            let val = scores[h.id] !== undefined ? scores[h.id] : (m[h.id] || 0);
-            tot += Number(val) || 0;
-            return `<td>${val || '-'}</td>`;
+    document.getElementById('summaryBody').innerHTML = rows.map(s => {
+        const mk = studentMarks(s);
+        const cells = currentConfig.map(t => t.hppList.map(h => {
+            const v = mk.scores[h.id];
+            return `<td>${(v !== undefined && v !== '') ? v : '-'}</td>`;
         }).join('')).join('');
 
         return `
             <tr class="hover:bg-slate-50">
                 <td class="text-left font-bold text-xs">${esc(s.Nama_Pelajar)}</td>
+                <td class="text-left text-[11px] text-slate-500">${esc(s.Kelas)}</td>
                 ${cells}
-                <td class="font-mono-score font-bold bg-slate-100">${tot ? Math.round(tot * 10) / 10 : '-'}</td>
-                <td class="font-serif-title font-bold text-blue-700 bg-slate-100">${tot ? calcGred(tot) : '-'}</td>
+                <td class="font-mono-score font-bold bg-slate-100">${mk.has ? mk.tot : '-'}</td>
+                <td class="font-serif-title font-bold text-blue-700 bg-slate-100">${mk.gred}</td>
+                <td><button onclick="printDossierKP('${esc(s.No_KP)}')" title="Cetak dossier individu" class="text-indigo-700 hover:text-indigo-900 px-2"><i class="fas fa-print"></i></button></td>
             </tr>
         `;
-    }).join('') || `<tr><td colspan="10" class="p-4 text-slate-400">Tiada rekod.</td></tr>`;
+    }).join('') || `<tr><td colspan="${nCols}" class="p-4 text-slate-400">Tiada rekod.</td></tr>`;
 }
 
 function loadGradeSummary() {
@@ -1288,39 +1355,150 @@ function runSPSimulation() {
     showToast('Simulasi Sisihan Piawai Berjaya Dijalankan.');
 }
 
-function printIndividualReport() {
-    if (!curS) return;
-    const m = curS.markahSediaAda || {};
-    const tot = m.total || 0;
-    
-    document.getElementById('printArea').innerHTML = `
-        <div class="p-8 font-sans">
-            <h2 class="text-center font-bold text-xl mb-1">IPG KAMPUS DARULAMAN</h2>
-            <h3 class="text-center font-bold text-sm mb-4">DOSSIER PEMARKAHAN MPU7011 (PENGURUSAN KOKURIKULUM)</h3>
-            <div class="border p-4 mb-4 text-xs space-y-1">
-                <div><strong>NAMA:</strong> ${esc(curS.Nama_Pelajar)}</div>
-                <div><strong>NO. KP:</strong> ${curS.No_KP}</div>
-                <div><strong>KELAS:</strong> ${curS.Kelas}</div>
+/* ====================== CETAKAN: DOSSIER INDIVIDU / PUKAL / REKOD KELAS ====================== */
+const LOGO_IPG = "https://lh3.googleusercontent.com/d/193WbeDf4HQnBBqOwc7JMAriBJFT7Fhdt";
+
+function printHeader(sub) {
+    return `
+        <div class="p-head">
+            <img src="${LOGO_IPG}" alt="Logo IPG">
+            <div>
+                <div class="t1">INSTITUT PENDIDIKAN GURU KAMPUS DARULAMAN</div>
+                <div class="t2">MPU7011 — PENGURUSAN KOKURIKULUM</div>
+                <div class="t3">${sub}</div>
             </div>
-            <table class="w-full border-collapse border text-xs text-center mb-6">
-                <thead>
-                    <tr class="bg-slate-100">
-                        <th class="border p-2">PEMARKAHAN MPU7011</th>
-                        <th class="border p-2">JUMLAH (100)</th>
-                        <th class="border p-2">GRED (100%)</th>
-                    </tr>
-                </thead>
+        </div>`;
+}
+
+function todayStr() {
+    const d = new Date();
+    const p = n => String(n).padStart(2, '0');
+    return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}`;
+}
+
+/* Satu dossier = satu muka surat A4 */
+function dossierHTML(s) {
+    const mk = studentMarks(s);
+    let rows = '', sumMax = 0;
+
+    currentConfig.forEach(t => {
+        let tMax = 0, tGot = 0;
+        t.hppList.forEach((h, i) => {
+            const v = mk.scores[h.id];
+            const got = (v !== undefined && v !== '') ? Number(v) || 0 : null;
+            tMax += Number(h.max) || 0;
+            if (got !== null) tGot += got;
+            rows += `<tr>
+                ${i === 0 ? `<td rowspan="${t.hppList.length}" style="font-weight:700; vertical-align:top;">${esc(t.nama)}</td>` : ''}
+                <td>${esc(h.nama)}</td>
+                <td class="c">${h.max}</td>
+                <td class="c" style="font-weight:700;">${got !== null ? got : '-'}</td>
+            </tr>`;
+        });
+        sumMax += tMax;
+        rows += `<tr class="sub"><td colspan="2" style="text-align:right;">Jumlah ${esc(t.nama)}</td><td class="c">${tMax}</td><td class="c">${mk.has ? Math.round(tGot * 10) / 10 : '-'}</td></tr>`;
+    });
+
+    return `
+        <div class="p-page">
+            ${printHeader('DOSSIER PEMARKAHAN PENTAKSIRAN BERTERUSAN')}
+            <table class="p-info">
+                <tr><td class="k">Nama</td><td colspan="3" style="font-weight:700;">${esc(s.Nama_Pelajar)}</td></tr>
+                <tr><td class="k">No. KP</td><td>${esc(s.No_KP)}</td><td class="k">No. Giliran</td><td>${esc(s.No_Giliran || '-')}</td></tr>
+                <tr><td class="k">Kelas</td><td>${esc(s.Kelas)}</td><td class="k">Kumpulan</td><td>${esc(s.No_Kumpulan || '-')}</td></tr>
+            </table>
+            <table class="p-table">
+                <thead><tr><th style="width:30%; text-align:left;">Tugasan</th><th style="text-align:left;">Komponen HPP</th><th class="c" style="width:15%;">Markah Penuh</th><th class="c" style="width:15%;">Markah Diperoleh</th></tr></thead>
                 <tbody>
-                    <tr>
-                        <td class="border p-2 text-left">Pentaksiran Berterusan MPU7011</td>
-                        <td class="border p-2 font-bold">${tot}</td>
-                        <td class="border p-2 font-bold">${calcGred(tot)}</td>
-                    </tr>
+                    ${rows}
+                    <tr class="tot"><td colspan="2" style="text-align:right;">JUMLAH KESELURUHAN</td><td class="c">${sumMax}</td><td class="c">${mk.has ? mk.tot : '-'}</td></tr>
+                    <tr class="tot"><td colspan="3" style="text-align:right;">GRED</td><td class="c">${mk.gred}</td></tr>
                 </tbody>
             </table>
-        </div>
-    `;
+            <div class="p-sign">
+                <div>
+                    Disediakan oleh (Pensyarah Penilai):
+                    <div class="ln">Nama: ${esc(mk.penilai || '')}<br>Tarikh:</div>
+                </div>
+                <div>
+                    Disahkan oleh (Penyelaras Kursus):
+                    <div class="ln">Nama:<br>Tarikh:</div>
+                </div>
+            </div>
+            <div class="p-foot">Dicetak pada ${todayStr()} melalui Portal Pemarkahan MPU7011</div>
+        </div>`;
+}
+
+/* Isi kawasan cetak, tunggu logo siap dimuat, kemudian cetak */
+async function doPrint(html) {
+    const area = document.getElementById('printArea');
+    area.innerHTML = html;
+    const imgs = Array.from(area.querySelectorAll('img'));
+    await Promise.race([
+        Promise.all(imgs.map(im => im.complete ? Promise.resolve() : new Promise(res => { im.onload = res; im.onerror = res; }))),
+        new Promise(res => setTimeout(res, 4000))
+    ]);
     window.print();
+}
+
+/* Individu: daripada butang "Cetak Dossier" pada Pemarkahan Induk */
+function printIndividualReport() {
+    if (!curS) return;
+    doPrint(dossierHTML(curS));
+}
+
+/* Individu: daripada ikon pencetak pada baris Rekod Prestasi */
+function printDossierKP(kp) {
+    const s = sData.find(x => String(x.No_KP) === String(kp));
+    if (!s) return showToast('Pelajar tidak dijumpai.', 'warn');
+    doPrint(dossierHTML(s));
+}
+
+/* Pukal: semua pelajar yang telah dinilai dalam kelas yang ditapis, satu muka surat seorang */
+function printBulkDossier() {
+    const { rows, kelas } = getSummaryRows();
+    const graded = rows.filter(s => studentMarks(s).has);
+    if (!graded.length) return showToast(`Tiada pelajar yang telah dinilai bagi ${kelas || 'semua kelas'}.`, 'warn');
+    showToast(`Menyediakan ${graded.length} dossier (${kelas || 'Semua Kelas'})...`);
+    doPrint(graded.map(dossierHTML).join(''));
+}
+
+/* Senarai markah satu kelas (atau semua) dalam satu jadual */
+function printClassRecord() {
+    const { rows, kelas } = getSummaryRows();
+    if (!rows.length) return showToast('Tiada rekod untuk dicetak.', 'warn');
+    const showKelas = !kelas;
+
+    const head = `<tr>
+        <th class="c" style="width:28px;">Bil</th><th style="text-align:left;">Nama Pelajar</th><th class="c">No. KP</th>
+        ${showKelas ? '<th style="text-align:left;">Kelas</th>' : ''}
+        ${currentConfig.map(t => t.hppList.map(h => `<th class="c">${esc(h.nama)}<br>(${h.max})</th>`).join('')).join('')}
+        <th class="c">Jumlah<br>(100)</th><th class="c">Gred</th>
+    </tr>`;
+
+    const body = rows.map((s, i) => {
+        const mk = studentMarks(s);
+        return `<tr>
+            <td class="c">${i + 1}</td><td>${esc(s.Nama_Pelajar)}</td><td class="c">${esc(s.No_KP)}</td>
+            ${showKelas ? `<td>${esc(s.Kelas)}</td>` : ''}
+            ${currentConfig.map(t => t.hppList.map(h => {
+                const v = mk.scores[h.id];
+                return `<td class="c">${(v !== undefined && v !== '') ? v : '-'}</td>`;
+            }).join('')).join('')}
+            <td class="c" style="font-weight:700;">${mk.has ? mk.tot : '-'}</td><td class="c" style="font-weight:700;">${mk.gred}</td>
+        </tr>`;
+    }).join('');
+
+    const graded = rows.filter(s => studentMarks(s).has).length;
+    doPrint(`
+        <div>
+            ${printHeader('REKOD PEMARKAHAN PENTAKSIRAN BERTERUSAN')}
+            <table class="p-info">
+                <tr><td class="k">Kelas</td><td style="font-weight:700;">${esc(kelas || 'Semua Kelas')}</td><td class="k">Bil. Pelajar</td><td>${rows.length} (dinilai: ${graded})</td></tr>
+            </table>
+            <table class="p-table" style="font-size:9.5px;"><thead>${head}</thead><tbody>${body}</tbody></table>
+            <div class="p-foot">Dicetak pada ${todayStr()} melalui Portal Pemarkahan MPU7011</div>
+        </div>`);
 }
 
 /* ====================== PENSYARAH: ANALISIS PENILAIAN RAKAN ====================== */
