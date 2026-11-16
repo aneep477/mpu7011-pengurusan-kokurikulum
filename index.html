@@ -189,6 +189,7 @@
         <div class="flex gap-2 overflow-x-auto">
             <button class="nav-btn active" onclick="showLecTab('marking')"><i class="fas fa-calculator me-1"></i> Pemarkahan Induk</button>
             <button class="nav-btn" onclick="showLecTab('rubrik')"><i class="fas fa-clipboard-list me-1"></i> Panel Rubrik</button>
+            <button class="nav-btn text-emerald-800" onclick="showLecTab('rakan')"><i class="fas fa-users me-1"></i> Analisis Rakan</button>
             <button id="navSetupBtn" class="nav-btn text-blue-800 font-extrabold" onclick="showLecTab('setup')"><i class="fas fa-sliders-h me-1"></i> ⚙️ Tetapan Kriteria HPP</button>
             <button class="nav-btn" onclick="showLecTab('summary')"><i class="fas fa-table me-1"></i> Rekod Prestasi</button>
             <button class="nav-btn" onclick="showLecTab('laporan')"><i class="fas fa-chart-pie me-1"></i> Analisis Gred</button>
@@ -284,6 +285,27 @@
                     <button onclick="saveRubrik()" id="btnSaveRubrik" class="btn-primary w-full py-3.5 rounded-lg text-xs mt-6">
                         <i class="fas fa-check-circle me-2"></i> Sahkan &amp; Simpan Rubrik (Autokira ke Pemarkahan Induk)
                     </button>
+                </div>
+            </div>
+
+            <!-- TAB: ANALISIS PENILAIAN RAKAN -->
+            <div id="ltab-rakan" style="display:none;">
+                <div id="rakanEmpty" class="academic-card p-12 text-center border-dashed border-2 bg-slate-50 min-h-[450px] flex items-center justify-center">
+                    <div class="text-slate-400">
+                        <i class="fas fa-users text-4xl mb-3"></i>
+                        <h4 class="font-serif-title text-xl font-bold text-slate-700 mb-1">Analisis Penilaian Rakan</h4>
+                        <p class="text-xs">Sila pilih pelajar dari senarai di sebelah kiri untuk melihat markah yang diberikan oleh rakan sekumpulan.</p>
+                    </div>
+                </div>
+
+                <div id="rakanPanel" style="display:none;" class="academic-card p-6 fade-in">
+                    <div class="flex justify-between items-center mb-4 border-b pb-3 gap-3 flex-wrap">
+                        <h2 class="font-serif-title text-xl font-bold text-slate-800">
+                            Analisis Penilaian Rakan: <span id="rakanNama" class="text-blue-700">--</span>
+                        </h2>
+                        <button onclick="loadPeerAnalysis()" class="btn-outline px-3 py-1.5 rounded"><i class="fas fa-sync me-1"></i> Segarkan</button>
+                    </div>
+                    <div id="rakanBody"></div>
                 </div>
             </div>
 
@@ -755,6 +777,7 @@ function selStud(kp) {
 
     calc();
     renderRubrikUI();
+    if (document.getElementById('ltab-rakan').style.display !== 'none') loadPeerAnalysis();
 }
 
 function calc() {
@@ -1037,7 +1060,7 @@ async function saveConfigToServer() {
 }
 
 function showLecTab(tab) {
-    ['marking','rubrik','setup','summary','laporan','moderasi','simulasi'].forEach(t => {
+    ['marking','rubrik','rakan','setup','summary','laporan','moderasi','simulasi'].forEach(t => {
         const el = document.getElementById('ltab-'+t);
         if (el) el.style.display = 'none';
     });
@@ -1045,6 +1068,7 @@ function showLecTab(tab) {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     event.currentTarget.classList.add('active');
     
+    if (tab === 'rakan') loadPeerAnalysis();
     if (tab === 'laporan') loadGradeSummary();
     if (tab === 'moderasi') loadModeration();
 }
@@ -1297,6 +1321,135 @@ function printIndividualReport() {
         </div>
     `;
     window.print();
+}
+
+/* ====================== PENSYARAH: ANALISIS PENILAIAN RAKAN ====================== */
+let peerRadar = null;
+
+async function loadPeerAnalysis() {
+    const emptyEl = document.getElementById('rakanEmpty');
+    const panel = document.getElementById('rakanPanel');
+    const body = document.getElementById('rakanBody');
+    if (!curS) { emptyEl.style.display = 'flex'; panel.style.display = 'none'; return; }
+
+    const kp = curS.No_KP;
+    emptyEl.style.display = 'none';
+    panel.style.display = 'block';
+    document.getElementById('rakanNama').innerText = curS.Nama_Pelajar;
+    body.innerHTML = `<div class="text-xs text-slate-500 p-4"><i class="fas fa-spinner fa-spin me-1"></i> Memuatkan penilaian rakan...</div>`;
+
+    try {
+        const r = await fetch(`${API}?action=getPeerSummary&targetKP=${encodeURIComponent(kp)}&email=${encodeURIComponent(curLec)}`);
+        const o = await r.json();
+        if (!curS || curS.No_KP !== kp) return;   // pelajar lain telah dipilih sementara menunggu
+        if (o.status !== 'success') throw new Error(o.message || 'Ralat pelayan');
+        renderPeerAnalysis(o);
+    } catch (e) {
+        if (!curS || curS.No_KP !== kp) return;
+        body.innerHTML = `<div class="text-xs text-rose-600 font-bold p-4">Gagal memuatkan penilaian rakan. Tekan "Segarkan" untuk cuba semula.</div>`;
+    }
+}
+
+function renderPeerAnalysis(o) {
+    const body = document.getElementById('rakanBody');
+    if (peerRadar) { peerRadar.destroy(); peerRadar = null; }
+
+    const count = Number(o.count) || 0;
+    if (!count) {
+        body.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs border border-dashed rounded-lg bg-slate-50">
+            <i class="fas fa-user-clock text-3xl mb-2"></i><br>Belum ada rakan yang menilai pelajar ini.</div>`;
+        return;
+    }
+
+    const qs = o.questions || [];
+    const dims = o.avgDims || [];
+    const avg = Number(o.avg) || 0;
+    const evals = o.evaluations || [];
+
+    const dimRows = qs.map((q, i) => {
+        const v = Number(dims[i]) || 0;
+        return `
+            <div class="mb-3">
+                <div class="flex justify-between text-xs mb-1">
+                    <span class="font-bold text-slate-700">${esc(q.title)}</span>
+                    <span class="font-mono-score font-bold text-blue-800">${v.toFixed(2)} / 5</span>
+                </div>
+                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full" style="width:${Math.min(100, v / 5 * 100)}%; background: var(--primary);"></div>
+                </div>
+                <div class="text-[10px] text-slate-400 mt-0.5">${esc(q.label || '')}</div>
+            </div>`;
+    }).join('');
+
+    const evalTable = evals.length ? `
+        <div class="text-xs font-bold text-slate-700 mt-6 mb-2 border-b pb-2"><i class="fas fa-list me-1 text-blue-700"></i> Butiran Setiap Penilaian</div>
+        <div class="overflow-x-auto border rounded-lg">
+            <table class="academic-table text-center">
+                <thead><tr>
+                    <th>Bil</th><th class="text-left">Penilai</th>
+                    ${qs.map(q => `<th>${esc(q.title)}</th>`).join('')}
+                    <th>Purata</th><th class="text-left">Catatan</th>
+                </tr></thead>
+                <tbody>
+                    ${evals.map((e, i) => `
+                        <tr>
+                            <td class="font-mono-score">${i + 1}</td>
+                            <td class="text-left font-bold text-xs">${esc(e.penilai)}</td>
+                            ${qs.map((q, qi) => `<td class="font-mono-score">${(e.scores || [])[qi] !== undefined ? e.scores[qi] : '-'}</td>`).join('')}
+                            <td class="font-mono-score font-bold text-blue-700">${(Number(e.avg) || 0).toFixed(2)}</td>
+                            <td class="text-left text-xs text-slate-600">${esc(e.catatan || '-')}</td>
+                        </tr>`).join('')}
+                </tbody>
+            </table>
+        </div>` : '';
+
+    body.innerHTML = `
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div class="academic-card p-4 text-center border-t-4" style="border-top-color: var(--primary);">
+                <div class="dim-label mb-1">Bilangan Rakan Menilai</div>
+                <div class="font-mono-score text-3xl font-extrabold text-slate-800">${count}</div>
+            </div>
+            <div class="academic-card p-4 text-center border-t-4" style="border-top-color: #0d9488;">
+                <div class="dim-label mb-1">Purata Keseluruhan</div>
+                <div class="font-mono-score text-3xl font-extrabold text-blue-700">${avg.toFixed(2)} <span class="text-sm text-slate-400">/ 5</span></div>
+            </div>
+            <div class="academic-card p-4 text-center border-t-4" style="border-top-color: #7c3aed;">
+                <div class="dim-label mb-1">Peratus Penilaian Rakan</div>
+                <div class="font-mono-score text-3xl font-extrabold text-purple-800">${(avg / 5 * 100).toFixed(1)}%</div>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+            <div class="academic-card p-5">
+                <div class="text-xs font-bold text-slate-700 mb-3 border-b pb-2"><i class="fas fa-chart-area me-1 text-blue-700"></i> Profil Mengikut Dimensi</div>
+                <div class="h-72 relative"><canvas id="peerRadarChart"></canvas></div>
+            </div>
+            <div class="academic-card p-5">
+                <div class="text-xs font-bold text-slate-700 mb-3 border-b pb-2"><i class="fas fa-sliders-h me-1 text-blue-700"></i> Purata Setiap Kriteria</div>
+                ${dimRows}
+            </div>
+        </div>
+        ${evalTable}`;
+
+    if (typeof Chart === 'undefined' || qs.length < 3) return;
+    peerRadar = new Chart(document.getElementById('peerRadarChart').getContext('2d'), {
+        type: 'radar',
+        data: {
+            labels: qs.map(q => q.title),
+            datasets: [{
+                label: 'Purata Rakan',
+                data: qs.map((q, i) => Number(dims[i]) || 0),
+                backgroundColor: 'rgba(30, 58, 138, 0.15)',
+                borderColor: '#1e3a8a',
+                pointBackgroundColor: '#1e3a8a',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { r: { min: 0, max: 5, ticks: { stepSize: 1 } } }
+        }
+    });
 }
 
 /* ====================== RUANG PELAJAR: GAMBAR, KUMPULAN, PENILAIAN RAKAN ====================== */
