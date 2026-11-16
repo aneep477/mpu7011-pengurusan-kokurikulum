@@ -12,7 +12,7 @@
     
     <style>
         :root {
-            --primary: #1e3a8a; --primary-hover: #1e40af; --secondary: #9f1239;
+            --primary: #1e3a8a; --secondary: #9f1239;
             --bg-body: #f8fafc; --bg-surface: #ffffff; --bg-alt: #f1f5f9;
             --text-main: #0f172a; --text-muted: #64748b; --border: #e2e8f0;
         }
@@ -23,7 +23,7 @@
         .academic-card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 0.75rem; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
         
         .btn-primary { background: var(--primary); border: 1px solid var(--primary); cursor: pointer; transition: all 0.2s; color: white; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn-primary:hover { background: #1e40af; transform: translateY(-1px); }
         .btn-outline { background: transparent; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px; }
         .btn-outline:hover { border-color: var(--primary); color: var(--primary); background: #f8fafc; }
 
@@ -41,16 +41,19 @@
         .score-row { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: white; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 12px; border-left: 5px solid transparent; }
         .score-input { width: 80px; text-align: center; font-weight: 900; font-size: 20px; padding: 8px; border-radius: 6px; border: 1px solid var(--border); }
 
-        @media print { body * { visibility: hidden; } #printArea, #printArea * { visibility: visible; } #printArea { position: absolute; left: 0; top: 0; width: 100%; } }
+        .academic-table { width: 100%; border-collapse: collapse; font-size: 12.5px; background: var(--bg-surface); }
+        .academic-table th { background: var(--bg-alt); padding: 10px 12px; text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 2px solid var(--border); }
+        .academic-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
     </style>
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
+<!-- LOGIN -->
 <div id="loginScreen" class="flex items-center justify-center min-h-screen p-6">
     <div class="academic-card w-full shadow-2xl p-8 sm:p-10 border-t-4" style="max-width:440px; border-top-color: var(--primary);">
         <div class="text-center mb-8">
-            <img src="https://lh3.googleusercontent.com/d/10kap54x0sqPu4bFZdju9P2fXKMpyMVi8" alt="Logo IPGKDA" class="h-20 mx-auto mb-4">
+            <!-- LOGO GOOGLE DRIVE -->
+            <img src="https://lh3.googleusercontent.com/d/193WbeDf4HQnBBqOwc7JMAriBJFT7Fhdt" alt="Logo IPGKDA" class="h-20 mx-auto mb-4 object-contain">
             <h1 class="font-serif-title text-2xl font-bold text-slate-800">Portal Pemarkahan</h1>
             <p class="text-xs text-slate-500 font-medium mt-1">MPU7011 — Pengurusan Kokurikulum</p>
         </div>
@@ -74,9 +77,8 @@
     </div>
     <div class="p-6 max-w-5xl mx-auto w-full">
         
-        <!-- PROFIL & UPLOAD GAMBAR -->
+        <!-- PROFIL & GAMBAR -->
         <div class="academic-card p-6 mb-6 flex flex-col md:flex-row gap-6 items-start">
-            <!-- Bahagian Gambar -->
             <div class="w-full md:w-48 flex flex-col items-center shrink-0">
                 <div class="w-40 h-52 bg-slate-100 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden relative mb-3">
                     <img id="sImg" class="w-full h-full object-cover hidden" alt="Gambar">
@@ -91,8 +93,6 @@
                     <button id="uploadBtn" onclick="hUp()" class="btn-primary flex-1 py-2 rounded text-[10px]">Muat Naik</button>
                 </div>
             </div>
-
-            <!-- Bahagian Maklumat -->
             <div class="flex-1 w-full">
                 <div class="flex items-center gap-4 mb-4 border-b pb-4">
                     <div>
@@ -143,6 +143,7 @@
         <div class="flex gap-2 overflow-x-auto">
             <button class="nav-btn active" onclick="showLecTab('marking', event)">Pemarkahan Induk</button>
             <button class="nav-btn" onclick="showLecTab('peer', event)">Analisis Rakan (HP8)</button>
+            <button class="nav-btn" onclick="showLecTab('summary', event)">Rekod Prestasi</button>
         </div>
     </div>
 
@@ -157,6 +158,7 @@
         </div>
 
         <div class="min-w-0">
+            <!-- PEMARKAHAN -->
             <div id="ltab-marking">
                 <div id="gradingEmpty" class="academic-card p-12 text-center border-dashed border-2 bg-slate-50 min-h-[400px] flex items-center justify-center">
                     <div class="text-slate-400">
@@ -170,20 +172,18 @@
                         <h2 id="ln" class="font-serif-title text-xl font-bold text-slate-800">--</h2>
                         <p id="lk" class="text-xs text-slate-500 font-mono-score mt-1">--</p>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        <div class="score-row" style="border-left-color: #8b5cf6;"><div><div class="font-bold text-sm">Ujian (HPK2)</div><div class="text-[10px] text-slate-500">Max: 20</div></div><input type="number" id="score_hpp2" class="score-input" oninput="calcTotal()"></div>
-                        <div class="score-row" style="border-left-color: #10b981;"><div><div class="font-bold text-sm">Penganjuran HP8</div><div class="text-[10px] text-slate-500">Max: 30</div></div><input type="number" id="score_hpp8" class="score-input" oninput="calcTotal()"></div>
-                        <div class="score-row" style="border-left-color: #0ea5e9;"><div><div class="font-bold text-sm">Penganjuran HP9</div><div class="text-[10px] text-slate-500">Max: 20</div></div><input type="number" id="score_hpp9" class="score-input" oninput="calcTotal()"></div>
-                        <div class="score-row" style="border-left-color: #f59e0b;"><div><div class="font-bold text-sm">Penulisan HP5</div><div class="text-[10px] text-slate-500">Max: 30</div></div><input type="number" id="score_hpp5" class="score-input" oninput="calcTotal()"></div>
-                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6" id="dynamicScoreContainer"></div>
+
                     <div class="academic-card p-5 bg-slate-900 text-white flex justify-between items-center mb-6">
                         <div class="text-sm uppercase tracking-wider">Jumlah Keseluruhan</div>
-                        <div class="text-4xl font-mono-score text-blue-400"><span id="totalScore">0.0</span> <span class="text-lg text-slate-400">/ 100</span></div>
+                        <div class="text-4xl font-mono-score text-blue-400"><span id="totalScore">0.0</span> <span class="text-lg text-slate-400">/ 60</span></div>
                     </div>
                     <button class="btn-primary w-full py-3.5 rounded-lg text-xs" onclick="simulateSave(event)">Simpan Markah</button>
                 </div>
             </div>
 
+            <!-- RADAR RAKAN -->
             <div id="ltab-peer" style="display:none;">
                 <div id="peerEmpty" class="academic-card p-12 text-center border-dashed border-2 bg-slate-50 min-h-[400px] flex items-center justify-center">
                     <div class="text-slate-400">
@@ -203,12 +203,24 @@
                     </div>
                 </div>
             </div>
+
+            <!-- REKOD PRESTASI -->
+            <div id="ltab-summary" style="display:none;">
+                <div class="academic-card p-6">
+                    <h3 class="font-serif-title text-lg font-bold mb-4 border-b pb-3">Buku Rekod Prestasi MPU7011</h3>
+                    <div class="overflow-x-auto border rounded-lg">
+                        <table class="academic-table text-center" id="summaryTable">
+                            <thead id="summaryHeader"></thead>
+                            <tbody id="summaryBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    // PASTIKAN URL INI ADALAH URL DEPLOYMENT ANDA YANG TERKINI
     const API = "https://script.google.com/macros/s/AKfycbzLoLwfXXUwdV9xlsyItCVWezdDxY225jAV0fOCloj_g5rnZP6QiwbdJGe7jj0ZgShcVw/exec"; 
     
     let mode = 'student';
@@ -216,6 +228,7 @@
     let currentLecturerEmail = "";
     let allStudents = [];
     let selectedStudent = null;
+    let currentConfig = [];
     let radarChart = null;
 
     function setLoginMode(m) {
@@ -242,19 +255,15 @@
                 document.getElementById('sN').textContent = currentUser.Nama_Pelajar;
                 document.getElementById('sK').textContent = `KP: ${currentUser.No_KP}`;
                 document.getElementById('sC').textContent = currentUser.Kelas;
-                
-                // Papar Kumpulan & No
                 document.getElementById('sKumpulan').textContent = currentUser.Kumpulan || '-';
                 document.getElementById('sNoKumpulan').textContent = currentUser.No_Dalam_Kumpulan || '-';
                 
                 if (currentUser.Link_Gambar) {
                     const img = document.getElementById('sImg');
-                    let driveId = currentUser.Link_Gambar.match(/\/d\/([a-zA-Z0-9_-]+)/)?.[1] || currentUser.Link_Gambar.match(/[?&]id=([a-zA-Z0-9_-]+)/)?.[1];
-                    img.src = driveId ? `https://lh3.googleusercontent.com/d/${driveId}` : currentUser.Link_Gambar;
+                    img.src = currentUser.Link_Gambar;
                     img.style.display = 'block';
                     document.getElementById('sPl').style.display = 'none';
                 }
-                
                 loadPeerGroup();
             } else alert(data.message);
         } else {
@@ -271,7 +280,7 @@
         }
     }
 
-    // --- LOGIK UPLOAD GAMBAR PELAJAR ---
+    // --- PELAJAR UPLOAD ---
     function pImg(input) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
@@ -289,30 +298,26 @@
         const fileInput = document.getElementById('fIn');
         if (!fileInput.files || !fileInput.files[0]) return alert("Sila pilih gambar dahulu.");
         const file = fileInput.files[0];
-        if (file.size > 2 * 1024 * 1024) return alert("Saiz gambar terhad kepada 2MB.");
-
         const btn = document.getElementById('uploadBtn');
         btn.disabled = true; btn.textContent = 'Memuat...';
-
         const reader = new FileReader();
         reader.onload = async function(e) {
-            const payload = { action: "uploadImage", noKP: currentUser.No_KP, imageData: e.target.result, fileName: `MPU7011_${currentUser.No_KP}_${file.name}` };
+            const payload = { action: "uploadImage", noKP: currentUser.No_KP, imageData: e.target.result, mimeType: file.type, fileName: `MPU7011_${currentUser.No_KP}_${file.name}` };
             try {
                 const res = await fetch(API, { method: "POST", body: JSON.stringify(payload) });
                 const result = await res.json();
-                if (result.status === "success") alert("Gambar berjaya dimuat naik!");
+                if (result.status === "success") alert("Gambar dimuat naik!");
                 else alert("Ralat: " + result.message);
-            } catch (err) { alert("Gagal memuat naik gambar."); }
+            } catch (err) { alert("Gagal memuat naik."); }
             btn.disabled = false; btn.textContent = 'Muat Naik';
         };
         reader.readAsDataURL(file);
     }
 
-    // --- LOGIK PEER EVAL PELAJAR ---
+    // --- PELAJAR PEER EVAL ---
     async function loadPeerGroup() {
         const res = await fetch(`${API}?action=getPeerGroups&kelas=${encodeURIComponent(currentUser.Kelas)}&kumpulan=${encodeURIComponent(currentUser.Kumpulan)}&noKP=${encodeURIComponent(currentUser.No_KP)}`);
         const data = await res.json();
-        
         if(data.status === "success") {
             const list = document.getElementById('peerListContainer');
             if(data.data.length === 0) {
@@ -343,15 +348,17 @@
         btn.className = 'w-10 h-10 rounded-md border border-blue-900 font-bold bg-blue-900 text-white';
     }
 
-    // --- LOGIK PENSYARAH ---
+    // --- PENSYARAH ---
     async function fetchStudents() {
         const res = await fetch(`${API}?action=getLecturerStudents&email=${encodeURIComponent(currentLecturerEmail)}`);
         const data = await res.json();
         if (data.status === "success") {
             allStudents = data.data;
+            currentConfig = data.config;
             const classes = [...new Set(allStudents.map(s => s.Kelas))].sort();
             document.getElementById('classFilter').innerHTML = '<option value="">Semua Kelas</option>' + classes.map(k => `<option value="${k}">${k}</option>`).join('');
             renderList();
+            renderSummaryTable();
         }
     }
 
@@ -381,29 +388,43 @@
         document.getElementById('ln').textContent = selectedStudent.Nama_Pelajar;
         document.getElementById('lk').textContent = `${selectedStudent.Kelas} | Kumpulan ${selectedStudent.Kumpulan || '-'}`;
         
-        const m = selectedStudent.markahSediaAda;
-        document.getElementById('score_hpp2').value = m ? m.hpp2 : '';
-        document.getElementById('score_hpp8').value = m ? m.hpp8 : '';
-        document.getElementById('score_hpp9').value = m ? m.hpp9 : '';
-        document.getElementById('score_hpp5').value = m ? m.hpp5 : '';
+        // Bina Kad Markah Dinamik
+        const container = document.getElementById('dynamicScoreContainer');
+        container.innerHTML = '';
+        currentConfig.forEach(t => {
+            t.hppList.forEach(hpp => {
+                const val = selectedStudent.markahSediaAda?.scores[hpp.id] || '';
+                container.innerHTML += `
+                    <div class="score-row" style="border-left-color: #3b82f6;">
+                        <div>
+                            <div class="font-bold text-sm">${hpp.nama}</div>
+                            <div class="text-[10px] text-slate-500">Max: ${hpp.max}</div>
+                        </div>
+                        <input type="number" id="score_${hpp.id}" class="score-input" value="${val}" oninput="calcTotal()">
+                    </div>
+                `;
+            });
+        });
         calcTotal();
 
-        if(document.getElementById('ltab-peer').style.display === 'block') {
-            loadPeerRadar(selectedStudent.No_KP, selectedStudent.Nama_Pelajar);
-        }
+        if(document.getElementById('ltab-peer').style.display === 'block') loadPeerRadar(selectedStudent.No_KP, selectedStudent.Nama_Pelajar);
     }
 
     function calcTotal() {
-        const hpp2 = parseFloat(document.getElementById('score_hpp2').value) || 0;
-        const hpp8 = parseFloat(document.getElementById('score_hpp8').value) || 0;
-        const hpp9 = parseFloat(document.getElementById('score_hpp9').value) || 0;
-        const hpp5 = parseFloat(document.getElementById('score_hpp5').value) || 0;
-        document.getElementById('totalScore').textContent = (hpp2 + hpp8 + hpp9 + hpp5).toFixed(1);
+        let total = 0;
+        currentConfig.forEach(t => {
+            t.hppList.forEach(hpp => {
+                const el = document.getElementById(`score_${hpp.id}`);
+                if(el) total += parseFloat(el.value) || 0;
+            });
+        });
+        document.getElementById('totalScore').textContent = total.toFixed(1);
     }
 
     function showLecTab(tab, evt) {
         document.getElementById('ltab-marking').style.display = tab === 'marking' ? 'block' : 'none';
         document.getElementById('ltab-peer').style.display = tab === 'peer' ? 'block' : 'none';
+        document.getElementById('ltab-summary').style.display = tab === 'summary' ? 'block' : 'none';
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         if(evt) evt.currentTarget.classList.add('active');
         if(tab === 'peer' && selectedStudent) loadPeerRadar(selectedStudent.No_KP, selectedStudent.Nama_Pelajar);
@@ -413,19 +434,28 @@
         if(!selectedStudent) return;
         const btn = event.target;
         btn.disabled = true; btn.textContent = 'Menyimpan...';
+        
+        let scores = {};
+        currentConfig.forEach(t => {
+            t.hppList.forEach(hpp => {
+                const el = document.getElementById(`score_${hpp.id}`);
+                scores[hpp.id] = el ? parseFloat(el.value) || 0 : 0;
+            });
+        });
+
         const payload = {
-            action: "submitScores", noKP: selectedStudent.No_KP, nama: selectedStudent.Nama_Pelajar, kelas: selectedStudent.Kelas,
-            hpp2: parseFloat(document.getElementById('score_hpp2').value)||0, hpp8: parseFloat(document.getElementById('score_hpp8').value)||0,
-            hpp9: parseFloat(document.getElementById('score_hpp9').value)||0, hpp5: parseFloat(document.getElementById('score_hpp5').value)||0,
-            justifikasi: "-", pensyarah: currentLecturerEmail
+            action: "submitScores", noKP: selectedStudent.No_KP, penilai: currentLecturerEmail, scores: scores
         };
         try {
-            await fetch(API, { method: "POST", body: JSON.stringify(payload) });
-            alert("Markah disimpan!"); fetchStudents();
+            const res = await fetch(API, { method: "POST", body: JSON.stringify(payload) });
+            const data = await res.json();
+            if(data.status === "success") { alert("Markah disimpan!"); fetchStudents(); }
+            else alert("Ralat: " + data.message);
         } catch (e) { alert("Gagal."); }
         btn.disabled = false; btn.textContent = 'Simpan Markah';
     }
 
+    // --- RADAR & REKOD ---
     async function loadPeerRadar(kp, nama) {
         document.getElementById('peerEmpty').style.display = 'none';
         document.getElementById('peerPanel').style.display = 'block';
@@ -433,21 +463,15 @@
 
         const res = await fetch(`${API}?action=getLecturerPeerData&noKP=${encodeURIComponent(kp)}`);
         const data = await res.json();
-        
-        const count = data.count || 0;
         const avgs = data.avgs || [0,0,0,0,0];
         const questions = data.questions || [];
 
-        if(count === 0) {
-            document.getElementById('peerScoresList').innerHTML = `<div class="text-xs text-slate-500 italic">Tiada penilaian rakan sebaya diterima lagi.</div>`;
-        } else {
-            document.getElementById('peerScoresList').innerHTML = questions.map((q, i) => `
-                <div class="flex justify-between items-center bg-slate-50 p-2 rounded border">
-                    <span class="text-xs font-bold text-slate-700">${q.title}</span>
-                    <span class="text-sm font-mono-score font-bold text-blue-900">${avgs[i]} / 5.0</span>
-                </div>
-            `).join('');
-        }
+        document.getElementById('peerScoresList').innerHTML = questions.map((q, i) => `
+            <div class="flex justify-between items-center bg-slate-50 p-2 rounded border">
+                <span class="text-xs font-bold text-slate-700">${q.title}</span>
+                <span class="text-sm font-mono-score font-bold text-blue-900">${avgs[i]} / 5.0</span>
+            </div>
+        `).join('');
 
         if(radarChart) radarChart.destroy();
         const ctx = document.getElementById('radarChart').getContext('2d');
@@ -455,20 +479,28 @@
             type: 'radar',
             data: {
                 labels: questions.map(q => q.title),
-                datasets: [{
-                    label: 'Purata Skor Rakan',
-                    data: avgs,
-                    backgroundColor: 'rgba(30, 58, 138, 0.2)',
-                    borderColor: 'rgba(30, 58, 138, 1)',
-                    pointBackgroundColor: 'rgba(30, 58, 138, 1)',
-                    borderWidth: 2
-                }]
+                datasets: [{ label: 'Purata Skor', data: avgs, backgroundColor: 'rgba(30, 58, 138, 0.2)', borderColor: 'rgba(30, 58, 138, 1)', borderWidth: 2 }]
             },
-            options: {
-                scales: { r: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } } },
-                plugins: { legend: { display: false } }
-            }
+            options: { scales: { r: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } } }, plugins: { legend: { display: false } } }
         });
+    }
+
+    function renderSummaryTable() {
+        let headers = `<tr><th class="text-left">Nama Pelajar</th><th>Kelas</th>`;
+        currentConfig.forEach(t => { t.hppList.forEach(hpp => { headers += `<th>${hpp.kod} (${hpp.max})</th>`; }); });
+        headers += `<th class="bg-slate-200">Jumlah (60)</th><th class="bg-slate-200">Gred</th></tr>`;
+        document.getElementById('summaryHeader').innerHTML = headers;
+
+        document.getElementById('summaryBody').innerHTML = allStudents.map(s => {
+            let row = `<tr><td class="text-left font-bold text-xs">${s.Nama_Pelajar}</td><td>${s.Kelas}</td>`;
+            currentConfig.forEach(t => { 
+                t.hppList.forEach(hpp => { 
+                    row += `<td class="font-mono-score">${s.markahSediaAda?.scores[hpp.id] || '-'}</td>`; 
+                }); 
+            });
+            row += `<td class="font-bold bg-slate-100">${s.markahSediaAda?.total || '-'}</td><td class="font-bold bg-slate-100">${s.markahSediaAda?.gred || '-'}</td></tr>`;
+            return row;
+        }).join('');
     }
 
     function logout() { location.reload(); }
