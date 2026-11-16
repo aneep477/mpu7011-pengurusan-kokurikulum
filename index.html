@@ -311,7 +311,14 @@
         const btn = document.getElementById('btnSaveKumpulan');
         btn.disabled = true; btn.innerHTML = 'Menyimpan...';
 
-        const payload = { action: "updateStudentGroup", noKP: currentUser.No_KP, kumpulan: kumpulan, noKumpulan: noKumpulan };
+        const payload = { 
+            action: "updateStudentGroup", 
+            noKP: currentUser.No_KP, 
+            kelas: currentUser.Kelas, // Hantar kelas untuk semakan pertindihan
+            kumpulan: kumpulan, 
+            noKumpulan: noKumpulan 
+        };
+        
         try {
             const res = await fetch(API, { method: "POST", body: JSON.stringify(payload) });
             const result = await res.json();
@@ -319,8 +326,10 @@
                 alert("Kumpulan berjaya disimpan!");
                 currentUser.Kumpulan = kumpulan;
                 currentUser.No_Dalam_Kumpulan = noKumpulan;
-                loadPeerGroup();
-            } else alert("Ralat: " + result.message);
+                loadPeerGroup(); // Muat semula senarai rakan
+            } else {
+                alert("Ralat: " + result.message);
+            }
         } catch(e) { alert("Gagal menyimpan kumpulan."); }
         btn.disabled = false; btn.innerHTML = '<i class="fas fa-save me-1"></i> Simpan Kumpulan';
     }
