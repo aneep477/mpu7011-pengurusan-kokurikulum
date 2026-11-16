@@ -1114,8 +1114,8 @@ function showLecTab(tab) {
 function loadModeration() {
     const N = 13;
     const graded = sData
-        .filter(s => s.markahSediaAda && Number(s.markahSediaAda.total) > 0)
-        .map(s => ({ nama: s.Nama_Pelajar, kelas: s.Kelas, markah: Number(s.markahSediaAda.total) }))
+        .filter(s => studentMarks(s).has)
+        .map(s => ({ nama: s.Nama_Pelajar, kelas: s.Kelas, markah: studentMarks(s).tot }))
         .sort((a, b) => b.markah - a.markah);
 
     const n = graded.length;
@@ -1217,8 +1217,8 @@ function loadGradeSummary() {
     const filtered = sData.filter(s => !classFilter || String(s.Kelas === undefined || s.Kelas === null ? '' : s.Kelas) === classFilter);
 
     const validScores = filtered
-        .map(s => (s.markahSediaAda && Number(s.markahSediaAda.total) > 0) ? Number(s.markahSediaAda.total) : 0)
-        .filter(v => v > 0);
+        .filter(s => studentMarks(s).has)
+        .map(s => studentMarks(s).tot);
 
     const n = validScores.length;
     document.getElementById('gradeTotalGradedVal').innerText = n;
@@ -1274,10 +1274,10 @@ function runSPSimulation() {
     const maxDelta = parseFloat(document.getElementById('simMaxDelta').value) || 3.0;
     const mode = document.getElementById('simGradeMode').value;
 
-    const validStudents = sData.filter(s => s.markahSediaAda && Number(s.markahSediaAda.total) > 0);
+    const validStudents = sData.filter(s => studentMarks(s).has);
     if (!validStudents.length) return showToast('Tiada markah pelajar tersedia untuk simulasi', 'warn');
 
-    let currentScores = validStudents.map(s => Number(s.markahSediaAda.total));
+    let currentScores = validStudents.map(s => studentMarks(s).tot);
     let mean = currentScores.reduce((a,b)=>a+b, 0) / currentScores.length;
     let variance = currentScores.reduce((a,b)=>a + Math.pow(b - mean, 2), 0) / currentScores.length;
     let currentSP = Math.sqrt(variance);
@@ -1294,7 +1294,7 @@ function runSPSimulation() {
     let gradeChangedCount = 0;
 
     validStudents.forEach(s => {
-        let origScore = Number(s.markahSediaAda.total);
+        let origScore = studentMarks(s).tot;
         let origGred = calcGred(origScore);
         let targetScore = origScore;
         let band = BAND_LIMITS_100[origGred] || { min: 0, max: 100 };
