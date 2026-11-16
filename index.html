@@ -7,66 +7,106 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
-            --primary: #1e3a8a; --secondary: #9f1239;
-            --bg-body: #f8fafc; --bg-surface: #ffffff; --bg-alt: #f1f5f9;
-            --text-main: #0f172a; --text-muted: #64748b; --border: #e2e8f0;
+            --primary: #1e3a8a;    
+            --primary-hover: #1e40af;
+            --secondary: #9f1239;  
+            --bg-body: #f8fafc;    
+            --bg-surface: #ffffff; 
+            --bg-alt: #f1f5f9;     
+            --text-main: #0f172a;  
+            --text-muted: #64748b; 
+            --border: #e2e8f0;     
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
+
+        body { user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg-body); min-height: 100vh; color: var(--text-main); }
         .font-serif-title { font-family: 'Lora', serif; }
         .font-mono-score { font-family: 'Space Mono', monospace; }
-        .academic-card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 0.75rem; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+        .shell { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1.5rem; }
+        .academic-card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 1rem; box-shadow: var(--shadow-sm); }
         
-        .btn-primary { background: var(--primary); border: 1px solid var(--primary); cursor: pointer; transition: all 0.2s; color: white; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .btn-primary:hover { background: #1e40af; transform: translateY(-1px); }
+        .btn-primary { background: var(--primary); border: 1px solid var(--primary); cursor: pointer; transition: all 0.2s ease-in-out; color: white; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; box-shadow: var(--shadow-sm); }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+        .btn-primary:disabled { background: #94a3b8; border-color: #94a3b8; cursor: not-allowed; }
         .btn-outline { background: transparent; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px; }
         .btn-outline:hover { border-color: var(--primary); color: var(--primary); background: #f8fafc; }
 
-        .s-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 0.5rem; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; border-left: 4px solid transparent; }
+        .s-card { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 0.75rem; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; border-left: 4px solid transparent; }
         .s-card:hover { background: var(--bg-alt); border-left-color: #94a3b8; }
-        .s-card.selected { background: #eff6ff; border-left-color: var(--primary); }
+        .s-card.selected { background: #eff6ff; border-left-color: var(--primary); border-color: #bfdbfe; }
         .s-card.done { border-left-color: #10b981; }
-        
         .s-img { width: 40px; height: 50px; border-radius: 4px; object-fit: cover; background: #e2e8f0; flex-shrink: 0; border: 1px solid #cbd5e1; }
 
-        .nav-btn { background:transparent; border:none; padding:10px 16px; font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; border-bottom:3px solid transparent; cursor:pointer; white-space:nowrap; }
-        .nav-btn.active { color:var(--primary); border-bottom-color:var(--primary); }
+        input[type=number], input[type=text], input[type=password], textarea, select { background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-main); outline: none; transition: all 0.2s; border-radius: 0.5rem; padding: 0.6rem 0.8rem; }
+        input:focus, textarea:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1); }
 
-        input[type=number], input[type=text], input[type=password], select { background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-main); outline: none; transition: all 0.2s; border-radius: 0.5rem; padding: 0.6rem 0.8rem; }
-        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1); }
+        input.score-input.at-max { border-color: #f59e0b !important; background: #fffbeb; }
+        input.score-input.invalid-flash { animation: flashWarn 0.4s ease; }
+        @keyframes flashWarn { 0% { background: #fee2e2; } 100% { background: var(--bg-surface); } }
 
-        .score-row { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: white; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 12px; border-left: 5px solid transparent; }
-        .score-input { width: 80px; text-align: center; font-weight: 900; font-size: 20px; padding: 8px; border-radius: 6px; border: 1px solid var(--border); }
+        #toast { position: fixed; top: 24px; right: 24px; z-index: 9999; transform: translateX(120%); transition: transform 0.3s ease; }
+        #toast.show { transform: translateX(0); }
 
         .academic-table { width: 100%; border-collapse: collapse; font-size: 12.5px; background: var(--bg-surface); }
         .academic-table th { background: var(--bg-alt); padding: 10px 12px; text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 2px solid var(--border); }
         .academic-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+
+        .dim-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 4px; display: block; }
+        .fade-in { animation: fadeIn 0.3s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media print {
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; }
+        }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
+
+<div id="toast">
+    <div class="academic-card px-5 py-4 flex items-center gap-3 text-sm font-bold shadow-lg" id="toastMsg" style="border-left: 4px solid var(--primary);"></div>
+</div>
 
 <!-- LOGIN -->
-<div id="loginScreen" class="flex items-center justify-center min-h-screen p-6">
+<div class="shell" id="loginScreen">
     <div class="academic-card w-full shadow-2xl p-8 sm:p-10 border-t-4" style="max-width:440px; border-top-color: var(--primary);">
-        <div class="text-center mb-8">
+        <div class="text-center mb-6">
             <img src="https://lh3.googleusercontent.com/d/193WbeDf4HQnBBqOwc7JMAriBJFT7Fhdt" alt="Logo IPGKDA" class="h-20 mx-auto mb-4 object-contain">
+            <div class="text-[10px] font-extrabold tracking-widest text-blue-800 uppercase mb-1">IPG Kampus Darulaman</div>
             <h1 class="font-serif-title text-2xl font-bold text-slate-800">Portal Pemarkahan</h1>
             <p class="text-xs text-slate-500 font-medium mt-1">MPU7011 — Pengurusan Kokurikulum</p>
         </div>
-        <div class="flex gap-2 mb-6 bg-slate-100 p-1 rounded-lg">
+
+        <div class="flex flex-col gap-4 mb-6">
+            <div>
+                <label class="dim-label">Emel Rasmi / No. KP Pelajar</label>
+                <input type="text" id="idIn" placeholder="Emel / No. KP" class="w-full font-mono-score text-center text-sm">
+            </div>
+            <div id="pwField" style="display:none;">
+                <label class="dim-label">Kata Laluan</label>
+                <input type="password" id="pwIn" placeholder="Kata Laluan" class="w-full text-center text-sm">
+            </div>
+        </div>
+
+        <div class="flex gap-2 mb-4 bg-slate-100 p-1 rounded-lg">
             <button class="flex-1 py-2 text-xs font-bold uppercase rounded-md bg-white text-blue-900 shadow-sm" onclick="setLoginMode('student')" id="btnTabS">Pelajar</button>
             <button class="flex-1 py-2 text-xs font-bold uppercase rounded-md text-slate-500" onclick="setLoginMode('lecturer')" id="btnTabL">Pensyarah</button>
         </div>
-        <div class="flex flex-col gap-4 mb-6">
-            <input type="text" id="idIn" placeholder="No. KP Pelajar" class="w-full text-center font-mono-score">
-            <input type="password" id="pwIn" placeholder="Kata Laluan Pensyarah" class="w-full text-center" style="display:none;">
-        </div>
-        <button onclick="handleAuth()" class="btn-primary w-full rounded-lg p-3.5 text-xs">Log Masuk Sistem</button>
+
+        <button onclick="handleAuth()" id="loginBtn" class="btn-primary w-full rounded-lg p-3 text-xs mb-3">
+            <i class="fas fa-sign-in-alt me-2"></i> Log Masuk Sistem
+        </button>
     </div>
 </div>
 
@@ -130,83 +170,162 @@
 
 <!-- DASHBOARD PENSYARAH -->
 <div id="lecturerDash" style="display:none;" class="min-h-screen flex-col">
-    <div class="bg-blue-900 text-white px-6 py-4 flex justify-between items-center sticky top-0 z-50">
-        <div class="flex items-center gap-3">
-            <i class="fas fa-chalkboard-teacher text-xl"></i>
+    <div class="bg-blue-900 text-white px-8 py-4 flex items-center justify-between sticky top-0 z-50 shadow-md">
+        <div class="flex items-center gap-4">
+            <div class="w-10 h-10 bg-blue-700/50 border border-blue-600 rounded-lg flex items-center justify-center text-lg">
+                <i class="fas fa-user-shield"></i>
+            </div>
             <div>
-                <div class="text-[10px] font-bold tracking-widest text-blue-300 uppercase">Pensyarah MPU7011</div>
-                <div id="lecName" class="font-serif-title font-bold">--</div>
+                <div class="text-[10px] font-bold tracking-widest text-blue-200 uppercase">Pensyarah MPU7011</div>
+                <div id="lecName" class="font-serif-title font-bold text-lg">--</div>
             </div>
         </div>
-        <button onclick="logout()" class="btn-outline border-white text-white hover:bg-blue-800 px-3 py-1.5 rounded-lg">Keluar</button>
+        <button onclick="logout()" class="btn-outline border-blue-600 text-white hover:bg-blue-800 px-4 py-2 rounded-lg text-xs">
+            <i class="fas fa-sign-out-alt me-1"></i> Keluar
+        </button>
     </div>
 
-    <div class="bg-white border-b px-6 pt-3">
+    <div class="bg-white border-b border-slate-200 px-8 pt-3">
         <div class="flex gap-2 overflow-x-auto">
-            <button class="nav-btn active" onclick="showLecTab('marking', event)">Pemarkahan Induk</button>
-            <button class="nav-btn" onclick="showLecTab('peer', event)">Analisis Rakan (HP8)</button>
-            <button class="nav-btn" onclick="showLecTab('summary', event)">Rekod Prestasi</button>
+            <button class="nav-btn active" onclick="showLecTab('marking')"><i class="fas fa-calculator me-1"></i> Pemarkahan Induk</button>
+            <button class="nav-btn" onclick="showLecTab('rubrik')"><i class="fas fa-clipboard-list me-1"></i> Panel Rubrik</button>
+            <button class="nav-btn text-blue-800 font-extrabold" onclick="showLecTab('setup')"><i class="fas fa-sliders-h me-1"></i> ⚙️ Tetapan Kriteria HPP</button>
+            <button class="nav-btn" onclick="showLecTab('summary')"><i class="fas fa-table me-1"></i> Rekod Prestasi</button>
+            <button class="nav-btn" onclick="showLecTab('laporan')"><i class="fas fa-chart-pie me-1"></i> Analisis Gred</button>
+            <button class="nav-btn text-amber-800" onclick="showLecTab('moderasi')"><i class="fas fa-balance-scale me-1"></i> Moderasi LAM-PT-04-02</button>
+            <button class="nav-btn text-purple-800" onclick="showLecTab('simulasi')"><i class="fas fa-flask me-1"></i> Simulasi SP</button>
         </div>
+        <style>
+            .nav-btn { background:transparent; border:none; padding:10px 16px; font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; border-bottom:3px solid transparent; cursor:pointer; white-space:nowrap; }
+            .nav-btn.active { color:var(--primary); border-bottom-color:var(--primary); }
+        </style>
     </div>
 
-    <div class="p-6 grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6 flex-1">
+    <div class="p-8 grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 flex-1">
         <div class="academic-card p-4 sticky top-24 self-start max-h-[calc(100vh-120px)] flex flex-col">
-            <div class="text-xs font-bold uppercase mb-3 text-slate-700">Senarai Pelajar</div>
-            <select id="classFilter" onchange="filterStudents()" class="w-full text-xs font-bold bg-slate-50 border rounded mb-2">
-                <option value="">Semua Kelas</option>
-            </select>
-            <input type="text" id="searchStudent" placeholder="Cari nama..." class="w-full text-xs bg-slate-50 border rounded mb-3" onkeyup="filterStudents()">
-            <div id="sList" class="overflow-y-auto flex-1 pr-1"></div>
+            <div class="text-xs font-bold uppercase tracking-wider mb-3 flex justify-between items-center text-slate-700">
+                <span>Senarai Pelajar</span>
+                <span id="studentCount" class="font-mono-score bg-slate-100 text-blue-800 text-[10px] px-2 py-0.5 rounded border">0</span>
+            </div>
+            <div class="mb-3 space-y-2">
+                <select id="classFilter" onchange="filterStudents()" class="w-full text-xs font-bold bg-slate-50 border rounded">
+                    <option value="">Semua Kelas</option>
+                </select>
+                <input type="text" id="searchStudent" placeholder="Cari nama atau KP..." class="w-full text-xs bg-slate-50 border rounded" onkeyup="filterStudents()">
+            </div>
+            <div id="sList" class="scroll-thin flex-1 overflow-y-auto pr-1"></div>
         </div>
 
         <div class="min-w-0">
+            <!-- TAB 1: PEMARKAHAN INDUK DYNAMIC -->
             <div id="ltab-marking">
-                <div id="gradingEmpty" class="academic-card p-12 text-center border-dashed border-2 bg-slate-50 min-h-[400px] flex items-center justify-center">
-                    <div class="text-slate-400">
-                        <i class="fas fa-hand-pointer text-4xl mb-3"></i>
-                        <h4 class="font-serif-title text-lg font-bold text-slate-700">Modul Pemarkahan MPU7011</h4>
-                        <p class="text-xs">Sila pilih pelajar dari senarai kiri.</p>
+                <div id="gradingEmpty" class="academic-card p-12 text-center border-dashed border-2 bg-slate-50 min-h-[450px] flex items-center justify-center">
+                    <div>
+                        <i class="fas fa-hand-pointer text-4xl text-slate-300 mb-3"></i>
+                        <h4 class="font-serif-title text-xl font-bold text-slate-700 mb-1">Pemarkahan Induk MPU7011 (100%)</h4>
+                        <p class="text-xs text-slate-500 max-w-sm mx-auto">Sila pilih nama pelajar dari senarai di sebelah kiri untuk mengisi atau menyemak markah.</p>
                     </div>
                 </div>
+
                 <div id="gradingPanel" style="display:none;" class="fade-in">
-                    <div class="academic-card p-5 mb-6 border-l-4 border-blue-900">
-                        <h2 id="ln" class="font-serif-title text-xl font-bold text-slate-800">--</h2>
-                        <p id="lk" class="text-xs text-slate-500 font-mono-score mt-1">--</p>
+                    <div class="academic-card p-5 mb-6 flex items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-blue-50 text-blue-700 border rounded-full flex items-center justify-center flex-shrink-0 text-xl font-bold">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Calon MPU7011</div>
+                                <div id="ln" class="font-serif-title text-xl font-bold text-slate-800">--</div>
+                                <div id="lk" class="font-mono-score text-xs text-slate-500 mt-1">--</div>
+                            </div>
+                        </div>
+                        <button onclick="printIndividualReport()" class="btn-outline text-xs px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 border-indigo-200">
+                            <i class="fas fa-file-pdf me-1"></i> Cetak Dossier
+                        </button>
                     </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6" id="dynamicScoreContainer"></div>
 
-                    <div class="academic-card p-5 bg-slate-900 text-white flex justify-between items-center mb-6">
-                        <div class="text-sm uppercase tracking-wider">Jumlah Keseluruhan</div>
-                        <div class="text-4xl font-mono-score text-blue-400"><span id="totalScore">0.0</span> <span class="text-lg text-slate-400">/ 100</span></div>
-                    </div>
-                    <button class="btn-primary w-full py-3.5 rounded-lg text-xs" onclick="simulateSave(event)">Simpan Markah</button>
-                </div>
-            </div>
+                    <div id="dynamicMarkingCards" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"></div>
 
-            <div id="ltab-peer" style="display:none;">
-                <div id="peerEmpty" class="academic-card p-12 text-center border-dashed border-2 bg-slate-50 min-h-[400px] flex items-center justify-center">
-                    <div class="text-slate-400">
-                        <i class="fas fa-radar text-4xl mb-3"></i>
-                        <h4 class="font-serif-title text-lg font-bold text-slate-700">Analisis Penilaian Rakan</h4>
-                        <p class="text-xs">Pilih pelajar untuk melihat radar chart penilaian HP8.</p>
-                    </div>
-                </div>
-                <div id="peerPanel" style="display:none;" class="fade-in academic-card p-6">
-                    <h3 class="font-serif-title text-lg font-bold mb-4 border-b pb-2">Penilaian 360 Darjah: <span id="peer_name_disp" class="text-blue-900"></span></h3>
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
-                        <div class="relative w-full h-80"><canvas id="radarChart"></canvas></div>
+                    <div class="academic-card p-6 bg-slate-900 text-white flex justify-between items-center mb-6">
                         <div>
-                            <h4 class="text-xs font-bold uppercase text-slate-500 mb-3">Purata Skor Mengikut Dimensi (1-5)</h4>
-                            <div id="peerScoresList" class="space-y-2"></div>
+                            <div class="text-xs text-slate-400 uppercase tracking-widest mb-1">Jumlah Pentaksiran Berterusan</div>
+                            <div class="flex items-baseline gap-2">
+                                <span id="totalMark" class="font-mono-score text-5xl font-extrabold text-blue-400">0.0</span>
+                                <span class="text-lg text-slate-400 font-bold">/ 100</span>
+                            </div>
+                        </div>
+                        <div class="text-right border-l border-slate-700 pl-8">
+                            <div class="text-xs text-slate-400 uppercase tracking-widest mb-1">Gred Abjad (Skala 100%) <span id="pctDisp" class="font-mono-score text-[10px] bg-slate-800 px-2 py-0.5 rounded text-blue-300">0.0%</span></div>
+                            <div id="gradeDisp" class="font-serif-title text-6xl font-bold text-amber-400">F</div>
                         </div>
                     </div>
+
+                    <button onclick="saveManual()" id="btnSaveManual" class="btn-primary w-full py-3.5 rounded-lg text-xs">
+                        <i class="fas fa-save me-2"></i> Simpan Pemarkahan MPU7011
+                    </button>
                 </div>
             </div>
 
+            <!-- TAB 2: PANEL RUBRIK -->
+            <div id="ltab-rubrik" style="display:none;">
+                <div id="rubrikEmpty" class="academic-card p-12 text-center border-dashed border-2 bg-slate-50 min-h-[450px] flex items-center justify-center">
+                    <div class="text-slate-400">
+                        <i class="fas fa-clipboard-list text-4xl mb-3"></i>
+                        <h4 class="font-serif-title text-xl font-bold text-slate-700 mb-1">Borang Rubrik MPU7011</h4>
+                        <p class="text-xs">Sila pilih pelajar dari senarai di sebelah kiri untuk mengisi atau mengesahkan rubrik.</p>
+                    </div>
+                </div>
+
+                <div id="rubrikPanel" style="display:none;" class="academic-card p-6 fade-in">
+                    <h2 class="font-serif-title text-xl font-bold text-slate-800 mb-4 border-b pb-3">
+                        Instrumen Rubrik: <span id="r_nama" class="text-blue-700">--</span>
+                    </h2>
+                    <div id="rubrikContainer" class="space-y-6"></div>
+                    <button onclick="saveRubrik()" id="btnSaveRubrik" class="btn-primary w-full py-3.5 rounded-lg text-xs mt-6">
+                        <i class="fas fa-check-circle me-2"></i> Sahkan &amp; Simpan Rubrik (Autokira ke Pemarkahan Induk)
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB 3: TETAPAN KRITERIA HPP -->
+            <div id="ltab-setup" style="display:none;">
+                <div class="academic-card p-6">
+                    <div class="flex justify-between items-center mb-4 border-b pb-3">
+                        <div>
+                            <h3 class="font-serif-title text-xl font-bold text-slate-800">⚙️ Tetapan Kriteria HPP &amp; Sub-Kriteria MPU7011</h3>
+                            <p class="text-xs text-slate-500 mt-1">Tentukan Tugasan, HPP/HPK, dan Sub-Kriteria (contoh: Pendahuluan 5%, Penutup 5% $\rightarrow$ HPP2 = 10%). Sistem akan menjana semula Header pada Google Sheet secara automatik.</p>
+                        </div>
+                        <button onclick="addTugasanBlock()" class="btn-outline px-3 py-1.5 bg-blue-50 text-blue-700 border-blue-200">
+                            <i class="fas fa-plus me-1"></i> Tambah Tugasan Baharu
+                        </button>
+                    </div>
+
+                    <div id="configEditorContainer" class="space-y-6"></div>
+
+                    <div class="mt-6 pt-4 border-t flex justify-end gap-3">
+                        <button onclick="loadConfigUI()" class="btn-outline px-4 py-2">Batal / Reset</button>
+                        <button onclick="saveConfigToServer()" id="btnSaveConfig" class="btn-primary px-6 py-2 rounded-lg text-xs">
+                            <i class="fas fa-cog me-2"></i> Simpan &amp; Jana Header Google Sheet
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: REKOD PRESTASI -->
             <div id="ltab-summary" style="display:none;">
                 <div class="academic-card p-6">
-                    <h3 class="font-serif-title text-lg font-bold mb-4 border-b pb-3">Buku Rekod Prestasi MPU7011</h3>
+                    <div class="flex justify-between items-center mb-4 flex-wrap gap-3 border-b pb-3">
+                        <h3 class="font-serif-title text-xl font-bold text-slate-800">Buku Rekod Pemarkahan MPU7011</h3>
+                        <div class="flex items-center gap-2">
+                            <select id="summarySortBy" onchange="loadSummary()" class="text-xs font-bold border rounded p-1.5 bg-slate-50">
+                                <option value="nama_asc">Susun: Nama (A-Z)</option>
+                                <option value="kelas_asc">Susun: Kelas (A-Z)</option>
+                                <option value="mark_desc">Susun: Markah (Tinggi ke Rendah)</option>
+                                <option value="mark_asc">Susun: Markah (Rendah ke Tinggi)</option>
+                            </select>
+                            <button onclick="loadSummary()" class="btn-outline px-3 py-1.5"><i class="fas fa-sync me-1"></i> Segarkan</button>
+                        </div>
+                    </div>
                     <div class="overflow-x-auto border rounded-lg">
                         <table class="academic-table text-center" id="summaryTable">
                             <thead id="summaryHeader"></thead>
@@ -215,35 +334,234 @@
                     </div>
                 </div>
             </div>
+
+            <!-- TAB 5: ANALISIS GRED & STATISTIK SISIHAN PIAWAI (REAL-TIME) -->
+            <div id="ltab-laporan" style="display:none;">
+                <div class="academic-card p-6 mb-6 border-l-4" style="border-left-color: var(--secondary);">
+                    <div class="flex justify-between items-center flex-wrap gap-4 border-b pb-4 mb-6">
+                        <div>
+                            <h3 class="font-serif-title text-xl font-bold text-slate-800">Analisis Taburan Gred &amp; Sisihan Piawai (SP)</h3>
+                            <p class="text-xs text-slate-500 mt-1">Statistik real-time dikira terus daripada markah terkumpul pelajar bagi subjek MPU7011.</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <select id="laporanClassFilter" onchange="loadGradeSummary()" class="text-xs font-bold border rounded p-2 bg-slate-50 min-w-[150px]">
+                                <option value="">Semua Kelas</option>
+                            </select>
+                            <button onclick="loadGradeSummary()" class="btn-outline px-3 py-2"><i class="fas fa-sync me-1"></i> Segar Semula</button>
+                        </div>
+                    </div>
+
+                    <!-- 4 KAD STATISTIK MASA NYATA -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div class="academic-card p-4 text-center border-t-4" style="border-top-color: var(--primary);">
+                            <div class="dim-label mb-1">JUMLAH CALON DINILAI</div>
+                            <div id="gradeTotalGradedVal" class="font-mono-score text-3xl font-extrabold text-slate-800">0</div>
+                            <div class="text-[10px] text-slate-400 font-bold mt-1">Penyertaan Terkumpul</div>
+                        </div>
+                        <div class="academic-card p-4 text-center border-t-4" style="border-top-color: #0d9488;">
+                            <div class="dim-label mb-1">PURATA MARKAH (MEAN)</div>
+                            <div id="gradeMinVal" class="font-mono-score text-3xl font-extrabold text-blue-700">--</div>
+                            <div class="text-[10px] text-slate-400 font-bold mt-1">Skala Maksimum 100%</div>
+                        </div>
+                        <div class="academic-card p-4 text-center border-t-4" style="border-top-color: var(--secondary);">
+                            <div class="dim-label mb-1">SISIHAN PIAWAI (SP)</div>
+                            <div id="gradeSDVal" class="font-mono-score text-3xl font-extrabold text-rose-700">--</div>
+                            <div class="text-[10px] text-slate-400 font-bold mt-1">Sebaran Markah Data</div>
+                        </div>
+                        <div class="academic-card p-4 text-center border-t-4" style="border-top-color: #7c3aed;">
+                            <div class="dim-label mb-1">JULAT MARKAH (MIN - MAX)</div>
+                            <div id="gradeRangeVal" class="font-mono-score text-xl font-extrabold text-purple-800">--</div>
+                            <div class="text-[10px] text-slate-400 font-bold mt-1">Had Pencapaian Data</div>
+                        </div>
+                    </div>
+
+                    <!-- JADUAL BAND & CARTA BAR -->
+                    <div class="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 items-start">
+                        <div class="academic-card p-4 overflow-hidden">
+                            <table class="academic-table text-center">
+                                <thead><tr><th>Skala (100%)</th><th>Gred</th><th>Jumlah</th><th>%</th></tr></thead>
+                                <tbody id="gradeSummaryBody"></tbody>
+                            </table>
+                        </div>
+                        <div class="academic-card p-5">
+                            <div class="text-xs font-bold text-slate-700 mb-3 flex justify-between items-center border-b pb-2">
+                                <span><i class="fas fa-chart-bar me-1 text-blue-700"></i> Graf Taburan Gred Calon</span>
+                                <span class="text-[10px] text-slate-400">Interactive Bar Graph</span>
+                            </div>
+                            <div class="h-64 relative">
+                                <canvas id="gradeChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 6: MODERASI LAM-PT-04-02 -->
+            <div id="ltab-moderasi" style="display:none;">
+                <div class="academic-card p-6">
+                    <h3 class="font-serif-title text-xl font-bold text-slate-800 mb-2">Modul Moderasi LAM-PT-04-02 (MPU7011)</h3>
+                    <p class="text-xs text-slate-500 mb-4">Sistem menukar markah 100m secara automatik ke skala peratusan (100%) untuk persampelan 13 skrip terlaras.</p>
+                    <button onclick="loadModeration()" class="btn-outline px-3 py-1.5 mb-4"><i class="fas fa-sync me-1"></i> Segarkan Sampel Moderasi</button>
+                    <div class="overflow-x-auto border rounded-lg">
+                        <table class="academic-table text-center">
+                            <thead><tr><th>Bil</th><th>Nama Pelajar</th><th>Kelas</th><th>Markah Mentah (100)</th><th>% (100)</th><th>Gred</th></tr></thead>
+                            <tbody id="moderationBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 7: SIMULASI SISIHAN PIAWAI (SP) ENGIN CANGGIH -->
+            <div id="ltab-simulasi" style="display:none;">
+                <div class="academic-card p-6">
+                    <div class="flex justify-between items-center mb-4 border-b pb-3">
+                        <div>
+                            <h3 class="font-serif-title text-xl font-bold text-slate-800">Simulasi Sisihan Piawai (SP) Canggih</h3>
+                            <p class="text-xs text-slate-500 mt-1">Fasa 1: Mengubah markah dalam sempadan gred sedia ada (Gred Kekal). Fasa 2: Penyesuaian merentas gred jika sasaran SP belum dicapai.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 bg-slate-50 p-4 rounded-lg border">
+                        <div>
+                            <label class="dim-label">Sasaran Sisihan Piawai (SP)</label>
+                            <input type="number" id="simTargetSP" value="5.5" step="0.1" class="w-full text-xs font-bold text-center">
+                        </div>
+                        <div>
+                            <label class="dim-label">Had Maksimum Delta (m)</label>
+                            <input type="number" id="simMaxDelta" value="3.0" step="0.5" class="w-full text-xs font-bold text-center">
+                        </div>
+                        <div>
+                            <label class="dim-label">Mod Penyesuaian Gred</label>
+                            <select id="simGradeMode" class="w-full text-xs font-bold bg-white">
+                                <option value="strict">Fasa 1: Gred Kekal Sahaja</option>
+                                <option value="flexible">Fasa 2: Benarkan Perubahan Gred (Bila Perlu)</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="runSPSimulation()" class="btn-primary w-full py-2.5 text-xs rounded-lg bg-purple-800 border-purple-800">
+                                <i class="fas fa-play me-1"></i> Jalankan Simulasi SP
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="simStatsSummary" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
+                            <div class="text-[10px] font-bold text-blue-800 uppercase">SP Asal</div>
+                            <div id="simSPBefore" class="font-mono-score text-2xl font-bold text-blue-900">0.0</div>
+                        </div>
+                        <div class="p-4 bg-purple-50 border border-purple-200 rounded-lg text-center">
+                            <div class="text-[10px] font-bold text-purple-800 uppercase">SP Hasil Simulasi</div>
+                            <div id="simSPAfter" class="font-mono-score text-2xl font-bold text-purple-900">0.0</div>
+                        </div>
+                        <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg text-center">
+                            <div class="text-[10px] font-bold text-amber-800 uppercase">Perubahan Gred</div>
+                            <div id="simGradeChangeCount" class="font-mono-score text-2xl font-bold text-amber-900">0 Pelajar</div>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto border rounded-lg">
+                        <table class="academic-table text-center" id="simTable">
+                            <thead>
+                                <tr>
+                                    <th>Bil</th>
+                                    <th class="text-left">Nama Pelajar</th>
+                                    <th>Kelas</th>
+                                    <th>Asal (100)</th>
+                                    <th>Target Simulasi (100)</th>
+                                    <th>Delta (m)</th>
+                                    <th>Gred Asal</th>
+                                    <th>Gred Baharu</th>
+                                    <th>Status Gred</th>
+                                </tr>
+                            </thead>
+                            <tbody id="simTableBody">
+                                <tr><td colspan="9" class="p-6 text-slate-400 text-xs">Tekan "Jalankan Simulasi SP" untuk melihat cadangan penyesuaian markah.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
+<div id="printArea"></div>
+
 <script>
-    const API = "https://script.google.com/macros/s/AKfycbzLoLwfXXUwdV9xlsyItCVWezdDxY225jAV0fOCloj_g5rnZP6QiwbdJGe7jj0ZgShcVw/exec"; 
-    
-    let mode = 'student';
-    let currentUser = null;
-    let currentLecturerEmail = "";
-    let allStudents = [];
-    let selectedStudent = null;
-    let currentConfig = [];
-    let radarChart = null;
+const API = "URL_APPS_SCRIPT_ANDA_DI_SINI"; // TUKAR URL INI KEPADA DEPLOYMENT ANDA
 
-    function setLoginMode(m) {
-        mode = m;
-        document.getElementById('btnTabS').className = m === 'student' ? 'flex-1 py-2 text-xs font-bold uppercase rounded-md bg-white text-blue-900 shadow-sm' : 'flex-1 py-2 text-xs font-bold uppercase rounded-md text-slate-500';
-        document.getElementById('btnTabL').className = m === 'lecturer' ? 'flex-1 py-2 text-xs font-bold uppercase rounded-md bg-white text-blue-900 shadow-sm' : 'flex-1 py-2 text-xs font-bold uppercase rounded-md text-slate-500';
-        document.getElementById('idIn').placeholder = m === 'student' ? 'No. KP Pelajar' : 'Emel Pensyarah';
-        document.getElementById('pwIn').style.display = m === 'student' ? 'none' : 'block';
+let mode = 'student';
+let currentUser = null;
+let curLec = "";
+let sData = [], curS = null, chartInstance = null;
+let currentConfig = [];
+
+/* --- KAWALAN KESELAMATAN ANTI-INSPECT --- */
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+    if (e.key === 'F12' || e.keyCode === 123) e.preventDefault();
+    if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) e.preventDefault();
+    if (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.key === 'S' || e.key === 's')) e.preventDefault();
+});
+
+function showToast(msg, type='success') {
+    const t = document.getElementById('toast'), m = document.getElementById('toastMsg');
+    if (!t || !m) return;
+    const cleanMsg = (msg && msg !== "undefined") ? msg : "Tindakan berjaya dilaksanakan.";
+    m.innerHTML = `<i class="fas ${type==='success'?'fa-check-circle text-blue-600':'fa-exclamation-triangle text-amber-600'}"></i> <span>${cleanMsg}</span>`;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function setLoginMode(m) {
+    mode = m;
+    document.getElementById('btnTabS').className = m === 'student' ? 'flex-1 py-2 text-xs font-bold uppercase rounded-md bg-white text-blue-900 shadow-sm' : 'flex-1 py-2 text-xs font-bold uppercase rounded-md text-slate-500';
+    document.getElementById('btnTabL').className = m === 'lecturer' ? 'flex-1 py-2 text-xs font-bold uppercase rounded-md bg-white text-blue-900 shadow-sm' : 'flex-1 py-2 text-xs font-bold uppercase rounded-md text-slate-500';
+    document.getElementById('idIn').placeholder = m === 'student' ? 'No. KP Pelajar' : 'Emel Pensyarah';
+    document.getElementById('pwField').style.display = m === 'student' ? 'none' : 'block';
+}
+
+function calcGred(total100) {
+    if (total100 >= 80) return "A"; 
+    if (total100 >= 70) return "B"; 
+    if (total100 >= 60) return "C";
+    if (total100 >= 50) return "D"; 
+    if (total100 >= 40) return "E";  
+    return "F";
+}
+
+function clampScore(el, maxVal) {
+    maxVal = Number(maxVal);
+    let raw = el.value;
+    let v = parseFloat(raw);
+    if (raw === '') { el.classList.remove('at-max'); return; }
+    if (isNaN(v)) v = 0;
+    if (v < 0) { v = 0; flashInvalid(el); }
+    if (v > maxVal) {
+        v = maxVal;
+        flashInvalid(el);
+        showToast(`Markah dihadkan kepada maksimum ${maxVal}m mengikut rubrik.`, 'warn');
     }
+    el.value = v;
+    el.classList.toggle('at-max', v === maxVal && maxVal > 0);
+}
 
-    async function handleAuth() {
-        const id = document.getElementById('idIn').value;
-        const pw = document.getElementById('pwIn').value;
-        if(!id) return alert("Sila masukkan maklumat.");
-        
-        if (mode === 'student') {
+function flashInvalid(el) {
+    el.classList.remove('invalid-flash');
+    void el.offsetWidth;
+    el.classList.add('invalid-flash');
+}
+
+async function handleAuth() {
+    const id = document.getElementById('idIn').value;
+    const pw = document.getElementById('pwIn').value;
+    if (!id) return showToast('Sila masukkan maklumat', 'warn');
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Mengesahkan...';
+
+    if (mode === 'student') {
+        try {
             const res = await fetch(`${API}?action=checkLogin&noKP=${encodeURIComponent(id)}`);
             const data = await res.json();
             if (data.status === "success") {
@@ -258,7 +576,7 @@
                 let selK = document.getElementById('selKumpulan');
                 selK.innerHTML = '<option value="">Pilih Kumpulan</option>';
                 for(let i=1; i<=15; i++) selK.innerHTML += `<option value="${i}">Kumpulan ${i}</option>`;
-                if(currentUser.Kumpulan && currentUser.Kumpulan !== '-') selK.value = currentUser.Kumpulan;
+                if(currentUser.No_Kumpulan && currentUser.No_Kumpulan !== '-') selK.value = currentUser.No_Kumpulan;
 
                 let selNo = document.getElementById('selNoKumpulan');
                 selNo.innerHTML = '<option value="">Pilih No.</option>';
@@ -272,304 +590,649 @@
                     document.getElementById('sPl').style.display = 'none';
                 }
                 
-                if(currentUser.Kumpulan && currentUser.Kumpulan !== '-') {
+                if(currentUser.No_Kumpulan && currentUser.No_Kumpulan !== '-') {
                     loadPeerGroup();
                 } else {
                     document.getElementById('peerListContainer').innerHTML = `<div class="text-xs text-amber-600 font-bold">Sila pilih dan simpan Kumpulan anda terlebih dahulu untuk melihat senarai rakan.</div>`;
                 }
-                
             } else alert(data.message);
-        } else {
-            if(!pw) return alert("Sila masukkan kata laluan.");
+        } catch (err) { alert("Ralat sambungan."); }
+    } else {
+        if (!pw) { btn.disabled = false; btn.innerHTML = 'Log Masuk'; return showToast('Sila masukkan kata laluan', 'warn'); }
+        try {
             const res = await fetch(`${API}?action=lecturerLogin&email=${encodeURIComponent(id)}&pass=${encodeURIComponent(pw)}`);
             const data = await res.json();
             if (data.status === "success") {
-                currentLecturerEmail = data.email;
-                document.getElementById('lecName').textContent = data.name;
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('lecturerDash').style.display = 'flex';
-                fetchStudents();
+                curLec = id;
+                document.getElementById('lecName').innerText = data.name;
+                initLec();
             } else alert(data.message);
-        }
+        } catch (err) { alert("Ralat sambungan."); }
     }
+    btn.disabled = false;
+    btn.innerHTML = 'Log Masuk Sistem';
+}
 
-    async function saveKumpulan() {
-        const kumpulan = document.getElementById('selKumpulan').value;
-        const noKumpulan = document.getElementById('selNoKumpulan').value;
-        if(!kumpulan || !noKumpulan) return alert("Sila pilih Kumpulan dan No. Dalam Kumpulan.");
-
-        const btn = document.getElementById('btnSaveKumpulan');
-        btn.disabled = true; btn.innerHTML = 'Menyimpan...';
-
-        const payload = { 
-            action: "updateStudentGroup", 
-            noKP: currentUser.No_KP, 
-            kelas: currentUser.Kelas,
-            kumpulan: kumpulan, 
-            noKumpulan: noKumpulan 
-        };
+async function initLec() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('lecturerDash').style.display = 'flex';
+    try {
+        const r = await fetch(`${API}?action=getLecturerStudents&email=${encodeURIComponent(curLec)}`);
+        const o = await r.json();
+        sData = o.data || [];
+        currentConfig = o.config || [];
         
-        try {
-            const res = await fetch(API, { method: "POST", body: JSON.stringify(payload) });
-            const result = await res.json();
-            if(result.status === "success") {
-                alert("Kumpulan berjaya disimpan!");
-                currentUser.Kumpulan = kumpulan;
-                currentUser.No_Dalam_Kumpulan = noKumpulan;
-                loadPeerGroup();
-            } else {
-                alert("Ralat: " + result.message);
-            }
-        } catch(e) { alert("Gagal menyimpan kumpulan."); }
-        btn.disabled = false; btn.innerHTML = '<i class="fas fa-save me-1"></i> Simpan Kumpulan';
-    }
-
-    function pImg(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.getElementById('sImg');
-                img.src = e.target.result;
-                img.style.display = 'block';
-                document.getElementById('sPl').style.display = 'none';
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
-    async function hUp() {
-        const fileInput = document.getElementById('fIn');
-        if (!fileInput.files || !fileInput.files[0]) return alert("Sila pilih gambar dahulu.");
-        const file = fileInput.files[0];
-        const btn = document.getElementById('uploadBtn');
-        btn.disabled = true; btn.textContent = 'Memuat...';
-        const reader = new FileReader();
-        reader.onload = async function(e) {
-            const payload = { action: "uploadImage", noKP: currentUser.No_KP, imageData: e.target.result, mimeType: file.type, fileName: `MPU7011_${currentUser.No_KP}_${file.name}` };
-            try {
-                const res = await fetch(API, { method: "POST", body: JSON.stringify(payload) });
-                const result = await res.json();
-                if (result.status === "success") {
-                    alert("Gambar dimuat naik!");
-                    document.getElementById('sImg').src = result.url;
-                } else alert("Ralat: " + result.message);
-            } catch (err) { alert("Gagal memuat naik."); }
-            btn.disabled = false; btn.textContent = 'Muat Naik';
-        };
-        reader.readAsDataURL(file);
-    }
-
-    async function loadPeerGroup() {
-        const res = await fetch(`${API}?action=getPeerGroups&kelas=${encodeURIComponent(currentUser.Kelas)}&kumpulan=${encodeURIComponent(currentUser.Kumpulan)}&noKP=${encodeURIComponent(currentUser.No_KP)}`);
-        const data = await res.json();
-        if(data.status === "success") {
-            const list = document.getElementById('peerListContainer');
-            if(data.data.length === 0) {
-                list.innerHTML = `<div class="text-xs text-slate-500">Tiada rakan dalam kumpulan ini (Sila pastikan Kumpulan & Kelas sama).</div>`;
-                return;
-            }
-            list.innerHTML = data.data.map(p => `
-                <div class="mb-6 pb-4 border-b">
-                    <div class="font-bold text-sm text-blue-900 mb-3">${p.No_Dalam_Kumpulan || '-'}. ${p.Nama_Pelajar}</div>
-                    <div class="space-y-3">
-                        ${data.questions.map(q => `
-                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 bg-slate-50 p-3 rounded border">
-                                <div class="text-xs font-bold text-slate-700">${q.title}</div>
-                                <div class="flex gap-2">
-                                    ${[1,2,3,4,5].map(v => `<button onclick="setPeerScore('${p.No_KP}', '${q.id}', ${v}, this)" class="w-10 h-10 rounded-md border border-slate-300 font-bold bg-white hover:bg-slate-100">${v}</button>`).join('')}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `).join('');
-        }
-    }
-
-    function setPeerScore(targetKP, qId, val, btn) {
-        const parent = btn.parentElement;
-        Array.from(parent.children).forEach(b => b.className = 'w-10 h-10 rounded-md border border-slate-300 font-bold bg-white hover:bg-slate-100');
-        btn.className = 'w-10 h-10 rounded-md border border-blue-900 font-bold bg-blue-900 text-white';
-    }
-
-    async function fetchStudents() {
-        const res = await fetch(`${API}?action=getLecturerStudents&email=${encodeURIComponent(currentLecturerEmail)}`);
-        const data = await res.json();
-        if (data.status === "success") {
-            allStudents = data.data;
-            currentConfig = data.config;
-            
-            // PERBAIKAN: Buang dropdown bertindih, set innerHTML sekali sahaja
-            const classSet = new Set();
-            allStudents.forEach(s => { if(s.Kelas) classSet.add(s.Kelas.toString()); });
-            const classes = Array.from(classSet).sort();
-            
-            document.getElementById('classFilter').innerHTML = '<option value="">Semua Kelas</option>' + classes.map(k => `<option value="${k}">${k}</option>`).join('');
-            
-            renderList();
-            renderSummaryTable();
-        }
-    }
-
-    function renderList() {
-        const q = document.getElementById('searchStudent').value.toLowerCase();
-        const c = document.getElementById('classFilter').value;
-        const filtered = allStudents.filter(s => (s.Nama_Pelajar.toLowerCase().includes(q) || s.No_KP.includes(q)) && (!c || s.Kelas === c));
+        const classSet = new Set();
+        sData.forEach(s => { if(s.Kelas) classSet.add(s.Kelas.toString()); });
+        const classes = Array.from(classSet).sort();
         
-        // PERBAIKAN: Tambah gambar pada kad pelajar
-        document.getElementById('sList').innerHTML = filtered.map(s => {
-            let imgUrl = "https://ui-avatars.com/api/?name=" + encodeURIComponent(s.Nama_Pelajar) + "&background=e2e8f0&color=64748b";
-            if(s.Link_Gambar && s.Link_Gambar.trim() !== "") imgUrl = s.Link_Gambar;
+        document.getElementById('classFilter').innerHTML = '<option value="">Semua Kelas</option>' + classes.map(k => `<option value="${k}">${k}</option>`).join('');
+        
+        renderList();
+        renderDynamicGradingCards();
+        loadConfigUI();
+        loadSummary();
+        loadGradeSummary();
+        showToast('Data MPU7011 & Tetapan Rubrik Berjaya Dimuat Turun.');
+    } catch(e) {
+        showToast('Gagal memuat turun data pelajar.', 'warn');
+    }
+}
 
-            return `
-            <div class="s-card ${s.markahSediaAda?'done':''}" onclick="selectStudent('${s.No_KP}', event)">
-                <img src="${imgUrl}" class="s-img" alt="Foto">
-                <div style="flex:1; min-width:0;">
-                    <div class="font-bold text-[11px] text-slate-800 leading-tight">${s.Nama_Pelajar}</div>
-                    <div class="text-[9px] text-slate-500 font-mono-score mt-1">${s.Kelas} • Kump. ${s.Kumpulan || '-'}</div>
-                </div>
+function renderList() {
+    const q = document.getElementById('searchStudent').value.toLowerCase();
+    const c = document.getElementById('classFilter').value;
+    const filtered = sData.filter(s => (s.Nama_Pelajar.toLowerCase().includes(q) || s.No_KP.includes(q)) && (!c || s.Kelas === c));
+    
+    document.getElementById('studentCount').innerText = filtered.length;
+    
+    document.getElementById('sList').innerHTML = filtered.map(s => {
+        let imgUrl = "https://ui-avatars.com/api/?name=" + encodeURIComponent(s.Nama_Pelajar) + "&background=e2e8f0&color=64748b";
+        if(s.Link_Gambar && s.Link_Gambar.trim() !== "") imgUrl = s.Link_Gambar;
+
+        return `
+        <div class="s-card ${s.markahSediaAda?'done':''}" onclick="selStud('${s.No_KP}')" data-kp="${s.No_KP}">
+            <img src="${imgUrl}" class="s-img" alt="Foto">
+            <div style="flex:1; min-width:0;">
+                <div class="font-bold text-xs text-slate-800 truncate">${s.Nama_Pelajar}</div>
+                <div class="text-[10px] text-slate-500 font-mono-score mt-0.5">${s.Kelas} • Kump. ${s.No_Kumpulan || '-'}</div>
             </div>
-            `;
-        }).join('') || `<div class="text-xs text-center text-slate-400 p-4">Tiada pelajar.</div>`;
-    }
+        </div>
+        `;
+    }).join('') || `<div class="text-center p-4 text-xs text-slate-400">Tiada pelajar.</div>`;
+}
 
-    function filterStudents() { renderList(); }
+function filterStudents() { renderList(); }
 
-    function selectStudent(kp, evt) {
-        selectedStudent = allStudents.find(s => s.No_KP === kp);
-        if(!selectedStudent) return;
-        
-        document.querySelectorAll('.s-card').forEach(el => el.classList.remove('selected'));
-        if(evt) evt.currentTarget.classList.add('selected');
+function renderDynamicGradingCards() {
+    const container = document.getElementById('dynamicMarkingCards');
+    if (!container) return;
 
-        document.getElementById('gradingEmpty').style.display = 'none';
-        document.getElementById('gradingPanel').style.display = 'block';
-        document.getElementById('ln').textContent = selectedStudent.Nama_Pelajar;
-        document.getElementById('lk').textContent = `${selectedStudent.Kelas} | Kumpulan ${selectedStudent.Kumpulan || '-'}`;
-        
-        // PERBAIKAN: Bina Kad Markah Dinamik (Susunan JST Asal)
-        const container = document.getElementById('dynamicScoreContainer');
-        container.innerHTML = '';
-        currentConfig.forEach(t => {
-            let inputsHtml = '';
-            t.hppList.forEach(hpp => {
-                const val = selectedStudent.markahSediaAda?.scores[hpp.id] || '';
-                inputsHtml += `
-                    <div class="score-row" style="border-left-color: #3b82f6;">
-                        <div>
-                            <div class="font-bold text-xs">${hpp.nama}</div>
-                            <div class="text-[10px] text-slate-500">Max: ${hpp.max}</div>
-                        </div>
-                        <input type="number" id="score_${hpp.id}" class="score-input" value="${val}" oninput="calcTotal()">
-                    </div>
-                `;
-            });
-            
-            container.innerHTML += `
-                <div class="academic-card p-4">
-                    <h4 class="font-bold text-sm text-center mb-3 text-slate-700 border-b pb-2">${t.nama}</h4>
-                    ${inputsHtml}
+    container.innerHTML = currentConfig.map((t) => {
+        let tMax = t.hppList.reduce((sum, h) => sum + Number(h.max), 0);
+        let inputs = t.hppList.map(hpp => `
+            <div class="mb-3 flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100">
+                <div>
+                    <label class="dim-label mb-0 text-blue-800">${hpp.name}</label>
+                    <span class="text-[10px] text-slate-400">Maksimum HPP: ${hpp.max}m</span>
                 </div>
-            `;
-        });
-        calcTotal();
-
-        if(document.getElementById('ltab-peer').style.display === 'block') loadPeerRadar(selectedStudent.No_KP, selectedStudent.Nama_Pelajar);
-    }
-
-    function calcTotal() {
-        let total = 0;
-        currentConfig.forEach(t => {
-            t.hppList.forEach(hpp => {
-                const el = document.getElementById(`score_${hpp.id}`);
-                if(el) total += parseFloat(el.value) || 0;
-            });
-        });
-        document.getElementById('totalScore').textContent = total.toFixed(1);
-    }
-
-    function showLecTab(tab, evt) {
-        document.getElementById('ltab-marking').style.display = tab === 'marking' ? 'block' : 'none';
-        document.getElementById('ltab-peer').style.display = tab === 'peer' ? 'block' : 'none';
-        document.getElementById('ltab-summary').style.display = tab === 'summary' ? 'block' : 'none';
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        if(evt) evt.currentTarget.classList.add('active');
-        if(tab === 'peer' && selectedStudent) loadPeerRadar(selectedStudent.No_KP, selectedStudent.Nama_Pelajar);
-    }
-
-    async function simulateSave(event) {
-        if(!selectedStudent) return;
-        const btn = event.target;
-        btn.disabled = true; btn.textContent = 'Menyimpan...';
-        
-        let scores = {};
-        currentConfig.forEach(t => {
-            t.hppList.forEach(hpp => {
-                const el = document.getElementById(`score_${hpp.id}`);
-                scores[hpp.id] = el ? parseFloat(el.value) || 0 : 0;
-            });
-        });
-
-        const payload = {
-            action: "submitScores", noKP: selectedStudent.No_KP, penilai: currentLecturerEmail, scores: scores
-        };
-        try {
-            const res = await fetch(API, { method: "POST", body: JSON.stringify(payload) });
-            const data = await res.json();
-            if(data.status === "success") { alert("Markah disimpan!"); fetchStudents(); }
-            else alert("Ralat: " + data.message);
-        } catch (e) { alert("Gagal."); }
-        btn.disabled = false; btn.textContent = 'Simpan Markah';
-    }
-
-    async function loadPeerRadar(kp, nama) {
-        document.getElementById('peerEmpty').style.display = 'none';
-        document.getElementById('peerPanel').style.display = 'block';
-        document.getElementById('peer_name_disp').textContent = nama;
-
-        const res = await fetch(`${API}?action=getLecturerPeerData&noKP=${encodeURIComponent(kp)}`);
-        const data = await res.json();
-        const avgs = data.avgs || [0,0,0,0,0];
-        const questions = data.questions || [];
-
-        document.getElementById('peerScoresList').innerHTML = questions.map((q, i) => `
-            <div class="flex justify-between items-center bg-slate-50 p-2 rounded border">
-                <span class="text-xs font-bold text-slate-700">${q.title}</span>
-                <span class="text-sm font-mono-score font-bold text-blue-900">${avgs[i]} / 5.0</span>
+                <input type="number" id="inp_${hpp.id}" min="0" max="${hpp.max}" step="0.1"
+                    class="score-input w-20 font-mono-score text-center font-bold text-lg border-blue-200 text-blue-700 bg-white"
+                    oninput="clampScore(this, ${hpp.max}); calc();"
+                    onblur="clampScore(this, ${hpp.max}); calc();">
             </div>
         `).join('');
 
-        if(radarChart) radarChart.destroy();
-        const ctx = document.getElementById('radarChart').getContext('2d');
-        radarChart = new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: questions.map(q => q.title),
-                datasets: [{ label: 'Purata Skor', data: avgs, backgroundColor: 'rgba(30, 58, 138, 0.2)', borderColor: 'rgba(30, 58, 138, 1)', borderWidth: 2 }]
-            },
-            options: { scales: { r: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } } }, plugins: { legend: { display: false } } }
+        return `
+            <div class="academic-card p-5 border-t-4" style="border-top-color: var(--primary);">
+                <div class="text-xs font-bold uppercase mb-4 pb-2 border-b flex justify-between">
+                    <span>${t.nama}</span>
+                    <span class="font-mono-score bg-slate-100 px-2 py-0.5 rounded border text-[10px]">${tMax}m</span>
+                </div>
+                ${inputs}
+            </div>
+        `;
+    }).join('');
+}
+
+function selStud(kp) {
+    curS = sData.find(s => s.No_KP == kp);
+    if (!curS) return;
+
+    document.querySelectorAll('.s-card').forEach(el => el.classList.remove('selected'));
+    const selEl = document.querySelector(`.s-card[data-kp="${kp}"]`);
+    if (selEl) selEl.classList.add('selected');
+
+    document.getElementById('ln').innerText = curS.Nama_Pelajar;
+    document.getElementById('lk').innerText = `ID: ${curS.No_KP} | Kelas: ${curS.Kelas}`;
+    document.getElementById('gradingEmpty').style.display = 'none';
+    document.getElementById('gradingPanel').style.display = 'block';
+
+    const scores = curS.markahSediaAda ? (curS.markahSediaAda.scores || {}) : {};
+    currentConfig.forEach(t => {
+        t.hppList.forEach(hpp => {
+            const el = document.getElementById(`inp_${hpp.id}`);
+            if (el) {
+                el.value = scores[hpp.id] !== undefined ? scores[hpp.id] : '';
+                if (el.value !== '') clampScore(el, hpp.max);
+            }
         });
+    });
+
+    calc();
+    renderRubrikUI();
+}
+
+function calc() {
+    let tot = 0;
+    currentConfig.forEach(t => {
+        t.hppList.forEach(hpp => {
+            const el = document.getElementById(`inp_${hpp.id}`);
+            let v = el ? Number(el.value) || 0 : 0;
+            v = Math.min(hpp.max, Math.max(0, v));
+            tot += v;
+        });
+    });
+
+    document.getElementById('totalMark').innerText = tot.toFixed(1);
+    document.getElementById('pctDisp').innerText = tot.toFixed(1) + '%';
+    document.getElementById('gradeDisp').innerText = calcGred(tot);
+}
+
+async function saveManual() {
+    if (!curS) return;
+    const btn = document.getElementById('btnSaveManual');
+    btn.disabled = true;
+
+    const payload = { action: 'submitScores', noKP: curS.No_KP, penilai: curLec, scores: {} };
+    currentConfig.forEach(t => {
+        t.hppList.forEach(hpp => {
+            const el = document.getElementById(`inp_${hpp.id}`);
+            if (el) clampScore(el, hpp.max);
+            payload.scores[hpp.id] = el ? el.value : 0;
+        });
+    });
+
+    try {
+        await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+        showToast('Markah MPU7011 Berjaya Disimpan');
+        setTimeout(initLec, 1200);
+    } catch(e) {
+        showToast('Ralat menyimpan markah.', 'warn');
+    }
+    btn.disabled = false;
+}
+
+async function renderRubrikUI() {
+    document.getElementById('rubrikEmpty').style.display = 'none';
+    document.getElementById('rubrikPanel').style.display = 'block';
+    document.getElementById('r_nama').innerText = curS.Nama_Pelajar;
+
+    document.getElementById('rubrikContainer').innerHTML = currentConfig.map(t => `
+        <div class="academic-card p-5 border-l-4 border-blue-700 bg-white">
+            <h4 class="font-bold text-sm text-blue-900 mb-4 pb-2 border-b flex justify-between">
+                <span>${t.nama}</span>
+            </h4>
+            <div class="space-y-5">
+                ${t.hppList.map(hpp => {
+                    let subInputs = (hpp.subKriteria || []).map(sub => `
+                        <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded border border-slate-200">
+                            <div>
+                                <div class="text-xs font-bold text-slate-800">${sub.nama}</div>
+                                <div class="text-[10px] text-slate-500">${sub.desc}</div>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <input type="number" id="r_sub_${sub.id}" data-hpp="${hpp.id}" data-max="${sub.max}"
+                                    value=""
+                                    max="${sub.max}" min="0" step="0.1"
+                                    class="score-input w-16 text-center font-bold text-xs bg-white border-blue-300"
+                                    oninput="clampScore(this, ${sub.max}); calcRubrikHPP('${hpp.id}')"
+                                    onblur="clampScore(this, ${sub.max}); calcRubrikHPP('${hpp.id}')">
+                                <span class="text-[10px] font-bold text-slate-400">/${sub.max}m</span>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    return `
+                        <div class="p-3 bg-blue-50/40 rounded-lg border border-blue-100">
+                            <div class="flex justify-between items-center mb-2">
+                                <div class="font-bold text-xs text-blue-900">${hpp.nama}</div>
+                                <div class="text-xs font-mono-score font-bold bg-white px-2 py-0.5 rounded border border-blue-200 text-blue-800">
+                                    Jumlah HPP: <span id="r_hpp_total_${hpp.id}">0.0</span> / ${hpp.max}m
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                ${subInputs}
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function calcRubrikHPP(hppId) {
+    let hppMax = 0;
+    currentConfig.forEach(t => t.hppList.forEach(h => { if (h.id === hppId) hppMax = Number(h.max); }));
+
+    let sum = 0;
+    const inputs = document.querySelectorAll(`input[data-hpp="${hppId}"]`);
+    inputs.forEach(inp => {
+        const maxAttr = Number(inp.dataset.max) || 0;
+        let v = Number(inp.value) || 0;
+        v = Math.min(maxAttr, Math.max(0, v));
+        sum += v;
+    });
+
+    if (hppMax > 0 && sum > hppMax) sum = hppMax;
+
+    const totalEl = document.getElementById(`r_hpp_total_${hppId}`);
+    if (totalEl) {
+        totalEl.innerText = sum.toFixed(1);
+        totalEl.style.color = (sum >= hppMax && hppMax > 0) ? '#1e3a8a' : '';
     }
 
-    function renderSummaryTable() {
-        let headers = `<tr><th class="text-left">Nama Pelajar</th><th>Kelas</th>`;
-        currentConfig.forEach(t => { t.hppList.forEach(hpp => { headers += `<th>${hpp.kod} (${hpp.max})</th>`; }); });
-        headers += `<th class="bg-slate-200">Jumlah</th><th class="bg-slate-200">Gred</th></tr>`;
-        document.getElementById('summaryHeader').innerHTML = headers;
+    const mainInp = document.getElementById(`inp_${hppId}`);
+    if (mainInp) {
+        mainInp.value = sum.toFixed(1);
+        calc();
+    }
+}
 
-        document.getElementById('summaryBody').innerHTML = allStudents.map(s => {
-            let row = `<tr><td class="text-left font-bold text-xs">${s.Nama_Pelajar}</td><td>${s.Kelas}</td>`;
-            currentConfig.forEach(t => { 
-                t.hppList.forEach(hpp => { 
-                    row += `<td class="font-mono-score">${s.markahSediaAda?.scores[hpp.id] || '-'}</td>`; 
-                }); 
+async function saveRubrik() {
+    if (!curS) return;
+    const btn = document.getElementById('btnSaveRubrik');
+    btn.disabled = true;
+
+    const payload = { action: 'submitScores', noKP: curS.No_KP, penilai: curLec, scores: {} };
+
+    currentConfig.forEach(t => {
+        t.hppList.forEach(hpp => {
+            let hppSum = 0;
+            (hpp.subKriteria || []).forEach(sub => {
+                const el = document.getElementById(`r_sub_${sub.id}`);
+                if (el) clampScore(el, sub.max);
+                const val = el ? Number(el.value) || 0 : 0;
+                hppSum += val;
             });
-            row += `<td class="font-bold bg-slate-100">${s.markahSediaAda?.total || '-'}</td><td class="font-bold bg-slate-100">${s.markahSediaAda?.gred || '-'}</td></tr>`;
-            return row;
-        }).join('');
+            hppSum = Math.min(hpp.max, hppSum);
+            payload.scores[hpp.id] = hppSum;
+            const mainInp = document.getElementById(`inp_${hpp.id}`);
+            if (mainInp) mainInp.value = hppSum.toFixed(1);
+        });
+    });
+
+    try {
+        await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+        showToast('Rubrik MPU7011 Disahkan & Markah Induk Dikemas kini!');
+        setTimeout(initLec, 1200);
+    } catch(e) {
+        showToast('Ralat menyimpan rubrik.', 'warn');
+    }
+    btn.disabled = false;
+}
+
+function loadConfigUI() {
+    const container = document.getElementById('configEditorContainer');
+    if (!container) return;
+
+    container.innerHTML = currentConfig.map((t, tIdx) => `
+        <div class="academic-card p-5 bg-slate-50 border border-slate-200">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b">
+                <input type="text" value="${t.nama}" onchange="currentConfig[${tIdx}].nama = this.value" class="font-bold text-sm bg-white border px-2 py-1 w-2/3">
+                <button onclick="removeTugasanBlock(${tIdx})" class="text-rose-600 text-xs font-bold hover:underline"><i class="fas fa-trash me-1"></i> Padam Tugasan</button>
+            </div>
+            
+            <div class="space-y-4 mb-4">
+                ${t.hppList.map((hpp, hIdx) => `
+                    <div class="bg-white p-3 rounded border border-blue-200">
+                        <div class="flex items-center gap-2 mb-2 pb-2 border-b border-slate-100">
+                            <input type="text" value="${hpp.id}" onchange="currentConfig[${tIdx}].hppList[${hIdx}].id = this.value" placeholder="Kod HPP" class="w-24 text-xs font-mono-score font-bold">
+                            <input type="text" value="${hpp.nama}" onchange="currentConfig[${tIdx}].hppList[${hIdx}].nama = this.value" placeholder="Nama HPP" class="flex-1 text-xs font-bold text-blue-800">
+                            <span class="text-xs font-bold text-slate-500">Jumlah HPP (Max):</span>
+                            <input type="number" value="${hpp.max}" onchange="currentConfig[${tIdx}].hppList[${hIdx}].max = Number(this.value)" placeholder="Max" class="w-16 text-xs text-center font-bold">
+                            <button onclick="removeHPPItem(${tIdx}, ${hIdx})" class="text-rose-500 text-xs px-2"><i class="fas fa-trash"></i> Padam HPP</button>
+                        </div>
+
+                        <div class="pl-4 space-y-2 border-l-2 border-blue-300 my-2">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase">Sub-Kriteria Pecahan Markah</div>
+                            ${(hpp.subKriteria || []).map((sub, sIdx) => `
+                                <div class="flex items-center gap-2 bg-slate-50 p-1.5 rounded border border-slate-200">
+                                    <input type="text" value="${sub.id}" onchange="currentConfig[${tIdx}].hppList[${hIdx}].subKriteria[${sIdx}].id = this.value" placeholder="ID Sub" class="w-20 text-[10px] font-mono-score">
+                                    <input type="text" value="${sub.nama}" onchange="currentConfig[${tIdx}].hppList[${hIdx}].subKriteria[${sIdx}].nama = this.value" placeholder="Nama Sub-Kriteria" class="w-1/3 text-xs font-bold">
+                                    <input type="number" value="${sub.max}" onchange="currentConfig[${tIdx}].hppList[${hIdx}].subKriteria[${sIdx}].max = Number(this.value)" placeholder="Max" class="w-14 text-xs text-center font-bold">
+                                    <input type="text" value="${sub.desc}" onchange="currentConfig[${tIdx}].hppList[${hIdx}].subKriteria[${sIdx}].desc = this.value" placeholder="Keterangan" class="flex-1 text-xs">
+                                    <button onclick="removeSubKriteriaItem(${tIdx}, ${hIdx}, ${sIdx})" class="text-rose-500 text-xs px-1"><i class="fas fa-times"></i></button>
+                                </div>
+                            `).join('')}
+                            <button onclick="addSubKriteriaItem(${tIdx}, ${hIdx})" class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded border border-blue-200 hover:bg-blue-100"><i class="fas fa-plus me-1"></i> Tambah Sub-Kriteria</button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            <button onclick="addHPPItem(${tIdx})" class="btn-outline px-2.5 py-1.5 text-xs bg-white"><i class="fas fa-plus me-1"></i> Tambah Komponen HPP</button>
+        </div>
+    `).join('');
+}
+
+function addTugasanBlock() {
+    currentConfig.push({
+        id: "t" + (currentConfig.length + 1),
+        nama: "Tugasan " + (currentConfig.length + 1) + ": Baharu",
+        hppList: [{ 
+            id: "hpp_new_" + Date.now(), 
+            nama: "HPP Baharu", 
+            max: 10, 
+            subKriteria: [{ id: "sub_1", nama: "Pecahan Kriteria 1", max: 10, desc: "Keterangan Kriteria" }] 
+        }]
+    });
+    loadConfigUI();
+}
+
+function removeTugasanBlock(tIdx) {
+    if(confirm("Padam tugasan ini?")) {
+        currentConfig.splice(tIdx, 1);
+        loadConfigUI();
+    }
+}
+
+function addHPPItem(tIdx) {
+    currentConfig[tIdx].hppList.push({ 
+        id: "hpp_" + Date.now().toString().slice(-4), 
+        nama: "HPP Baharu", 
+        max: 10, 
+        subKriteria: [{ id: "sub_1", nama: "Pecahan Kriteria 1", max: 10, desc: "Keterangan Kriteria" }] 
+    });
+    loadConfigUI();
+}
+
+function removeHPPItem(tIdx, hIdx) {
+    currentConfig[tIdx].hppList.splice(hIdx, 1);
+    loadConfigUI();
+}
+
+function addSubKriteriaItem(tIdx, hIdx) {
+    if (!currentConfig[tIdx].hppList[hIdx].subKriteria) {
+        currentConfig[tIdx].hppList[hIdx].subKriteria = [];
+    }
+    currentConfig[tIdx].hppList[hIdx].subKriteria.push({
+        id: "sub_" + Date.now().toString().slice(-4),
+        nama: "Sub-Kriteria Baharu",
+        max: 5,
+        desc: "Keterangan"
+    });
+    loadConfigUI();
+}
+
+function removeSubKriteriaItem(tIdx, hIdx, sIdx) {
+    currentConfig[tIdx].hppList[hIdx].subKriteria.splice(sIdx, 1);
+    loadConfigUI();
+}
+
+async function saveConfigToServer() {
+    const btn = document.getElementById('btnSaveConfig');
+    btn.disabled = true;
+    try {
+        await fetch(API, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({ action: 'saveHppConfig', email: curLec, config: currentConfig })
+        });
+        showToast('Tetapan HPP & Sub-Kriteria Berjaya Disimpan!');
+        setTimeout(initLec, 1500);
+    } catch(e) {
+        showToast('Ralat menyimpan tetapan.', 'warn');
+    }
+    btn.disabled = false;
+}
+
+function showLecTab(tab) {
+    ['marking','rubrik','setup','summary','laporan','moderasi','simulasi'].forEach(t => {
+        const el = document.getElementById('ltab-'+t);
+        if (el) el.style.display = 'none';
+    });
+    document.getElementById('ltab-'+tab).style.display = 'block';
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    
+    if (tab === 'laporan') loadGradeSummary();
+    if (tab === 'moderasi') loadModeration();
+}
+
+async function loadModeration() {
+    try {
+        const r = await fetch(`${API}?action=getModerationSampling&email=${encodeURIComponent(curLec)}`);
+        const o = await r.json();
+        const samples = o.samples || [];
+        document.getElementById('moderationBody').innerHTML = samples.map((s, i) => `
+            <tr>
+                <td class="font-mono-score">${i+1}</td>
+                <td class="font-bold text-left">${s.nama}</td>
+                <td>${s.kelas}</td>
+                <td class="font-mono-score font-bold">${s.markah}</td>
+                <td class="font-mono-score text-blue-700 font-bold">${s.markahPct.toFixed(1)}%</td>
+                <td class="font-serif-title font-bold">${s.gred}</td>
+            </tr>
+        `).join('') || `<tr><td colspan="6" class="p-4 text-slate-400">Tiada sampel moderasi.</td></tr>`;
+    } catch(e){}
+}
+
+function loadSummary() {
+    const sortBy = document.getElementById('summarySortBy') ? document.getElementById('summarySortBy').value : 'nama_asc';
+    let sortedData = [...sData];
+
+    if (sortBy === 'nama_asc') sortedData.sort((a,b) => a.Nama_Pelajar.localeCompare(b.Nama_Pelajar));
+    else if (sortBy === 'kelas_asc') sortedData.sort((a,b) => (a.Kelas||'').localeCompare(b.Kelas||''));
+    else if (sortBy === 'mark_desc') sortedData.sort((a,b) => ((b.markahSediaAda?.total||0) - (a.markahSediaAda?.total||0)));
+    else if (sortBy === 'mark_asc') sortedData.sort((a,b) => ((a.markahSediaAda?.total||0) - (b.markahSediaAda?.total||0)));
+
+    const headerRow = `<tr>
+        <th class="text-left">Nama Pelajar</th>
+        ${currentConfig.map(t => t.hppList.map(h => `<th>${h.nama} (${h.max})</th>`).join('')).join('')}
+        <th class="bg-slate-200 text-slate-800">JUMLAH (100)</th>
+        <th class="bg-slate-200 text-slate-800">GRED (100%)</th>
+    </tr>`;
+    document.getElementById('summaryHeader').innerHTML = headerRow;
+
+    document.getElementById('summaryBody').innerHTML = sortedData.map(s => {
+        const m = s.markahSediaAda || {};
+        const scores = m.scores || {};
+        let tot = 0;
+
+        let cells = currentConfig.map(t => t.hppList.map(h => {
+            let val = scores[h.id] !== undefined ? scores[h.id] : (m[h.id] || 0);
+            tot += Number(val) || 0;
+            return `<td>${val || '-'}</td>`;
+        }).join('')).join('');
+
+        return `
+            <tr class="hover:bg-slate-50">
+                <td class="text-left font-bold text-xs">${s.Nama_Pelajar}</td>
+                ${cells}
+                <td class="font-mono-score font-bold bg-slate-100">${tot || '-'}</td>
+                <td class="font-serif-title font-bold text-blue-700 bg-slate-100">${tot ? calcGred(tot) : '-'}</td>
+            </tr>
+        `;
+    }).join('') || `<tr><td colspan="10" class="p-4 text-slate-400">Tiada rekod.</td></tr>`;
+}
+
+async function loadGradeSummary() {
+    const classFilter = document.getElementById('laporanClassFilter') ? document.getElementById('laporanClassFilter').value : "";
+    const filtered = sData.filter(s => !classFilter || (s.Kelas || "").toString() === classFilter);
+
+    const validScores = filtered
+        .map(s => (s.markahSediaAda && Number(s.markahSediaAda.total) > 0) ? Number(s.markahSediaAda.total) : 0)
+        .filter(v => v > 0);
+
+    const n = validScores.length;
+    document.getElementById('gradeTotalGradedVal').innerText = n;
+
+    if (n > 0) {
+        const mean = validScores.reduce((a, b) => a + b, 0) / n;
+        const variance = validScores.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / n;
+        const sd = Math.sqrt(variance);
+        const minVal = Math.min(...validScores);
+        const maxVal = Math.max(...validScores);
+
+        document.getElementById('gradeMinVal').innerText = mean.toFixed(2) + '%';
+        document.getElementById('gradeSDVal').innerText = sd.toFixed(2);
+        document.getElementById('gradeRangeVal').innerText = `${minVal.toFixed(1)}% - ${maxVal.toFixed(1)}%`;
+    } else {
+        document.getElementById('gradeMinVal').innerText = '--';
+        document.getElementById('gradeSDVal').innerText = '--';
+        document.getElementById('gradeRangeVal').innerText = '--';
     }
 
-    function logout() { location.reload(); }
+    try {
+        const r = await fetch(`${API}?action=getGradeSummary&email=${encodeURIComponent(curLec)}&kelas=${encodeURIComponent(classFilter)}`);
+        const o = await r.json();
+        const bands = o.bands || [];
+
+        document.getElementById('gradeSummaryBody').innerHTML = bands.map(b => `
+            <tr>
+                <td class="p-2 text-center font-mono-score text-xs">${b.skala}</td>
+                <td class="p-2 text-center font-bold text-blue-800">${b.gred}</td>
+                <td class="p-2 text-center font-mono-score font-bold">${b.jumlah}</td>
+                <td class="p-2 text-center font-mono-score">${b.peratus}%</td>
+            </tr>
+        `).join('');
+
+        if (chartInstance) chartInstance.destroy();
+        const ctx = document.getElementById('gradeChart').getContext('2d');
+        chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: bands.map(b => b.gred),
+                datasets: [{ label: 'Jumlah Pelajar', data: bands.map(b => b.jumlah), backgroundColor: '#1e3a8a', borderRadius: 4 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+        });
+    } catch(e){}
+}
+
+function runSPSimulation() {
+    const targetSP = parseFloat(document.getElementById('simTargetSP').value) || 5.5;
+    const maxDelta = parseFloat(document.getElementById('simMaxDelta').value) || 3.0;
+    const mode = document.getElementById('simGradeMode').value;
+
+    const validStudents = sData.filter(s => s.markahSediaAda && Number(s.markahSediaAda.total) > 0);
+    if (!validStudents.length) return showToast('Tiada markah pelajar tersedia untuk simulasi', 'warn');
+
+    let currentScores = validStudents.map(s => Number(s.markahSediaAda.total));
+    let mean = currentScores.reduce((a,b)=>a+b, 0) / currentScores.length;
+    let variance = currentScores.reduce((a,b)=>a + Math.pow(b - mean, 2), 0) / currentScores.length;
+    let currentSP = Math.sqrt(variance);
+
+    document.getElementById('simSPBefore').innerText = currentSP.toFixed(2);
+
+    const BAND_LIMITS_100 = {
+        "A": { min: 80.0, max: 100.0 }, "B": { min: 70.0, max: 79.9 }, 
+        "C": { min: 60.0, max: 69.9 }, "D": { min: 50.0, max: 59.9 },
+        "E": { min: 40.0, max: 49.9 }, "F": { min: 0.0, max: 39.9 }
+    };
+
+    let simResults = [];
+    let gradeChangedCount = 0;
+
+    validStudents.forEach(s => {
+        let origScore = Number(s.markahSediaAda.total);
+        let origGred = calcGred(origScore);
+        let targetScore = origScore;
+        let band = BAND_LIMITS_100[origGred] || { min: 0, max: 100 };
+
+        if (origScore >= mean) {
+            let possibleNew = origScore + maxDelta;
+            if (mode === 'strict') targetScore = Math.min(band.max, possibleNew);
+            else targetScore = Math.min(100.0, possibleNew);
+        } else {
+            let possibleNew = origScore - maxDelta;
+            if (mode === 'strict') targetScore = Math.max(band.min, possibleNew);
+            else targetScore = Math.max(0.0, possibleNew);
+        }
+
+        let newGred = calcGred(targetScore);
+        let gredStatus = (origGred === newGred) ? "Gred Kekal" : "Gred Berubah";
+        if (origGred !== newGred) gradeChangedCount++;
+
+        simResults.push({
+            nama: s.Nama_Pelajar,
+            kelas: s.Kelas,
+            origScore: origScore,
+            targetScore: Number(targetScore.toFixed(1)),
+            delta: Number((targetScore - origScore).toFixed(1)),
+            origGred: origGred,
+            newGred: newGred,
+            gredStatus: gredStatus
+        });
+    });
+
+    let newScores = simResults.map(r => r.targetScore);
+    let newMean = newScores.reduce((a,b)=>a+b, 0) / newScores.length;
+    let newVariance = newScores.reduce((a,b)=>a + Math.pow(b - newMean, 2), 0) / newScores.length;
+    let newSP = Math.sqrt(newVariance);
+
+    document.getElementById('simSPAfter').innerText = newSP.toFixed(2);
+    document.getElementById('simGradeChangeCount').innerText = `${gradeChangedCount} Pelajar`;
+    document.getElementById('simStatsSummary').classList.remove('hidden');
+
+    document.getElementById('simTableBody').innerHTML = simResults.map((r, i) => `
+        <tr class="${r.origGred !== r.newGred ? 'bg-amber-50' : ''}">
+            <td>${i+1}</td>
+            <td class="text-left font-bold text-xs">${r.nama}</td>
+            <td>${r.kelas}</td>
+            <td class="font-mono-score font-bold">${r.origScore}</td>
+            <td class="font-mono-score font-bold text-purple-700">${r.targetScore}</td>
+            <td class="font-mono-score text-xs ${r.delta >= 0 ? 'text-blue-700' : 'text-rose-600'}">${r.delta >= 0 ? '+'+r.delta : r.delta}</td>
+            <td class="font-serif-title font-bold">${r.origGred}</td>
+            <td class="font-serif-title font-bold text-purple-800">${r.newGred}</td>
+            <td>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${r.origGred === r.newGred ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'}">
+                    ${r.gredStatus}
+                </span>
+            </td>
+        </tr>
+    `).join('');
+
+    showToast('Simulasi Sisihan Piawai Berjaya Dijalankan.');
+}
+
+function printIndividualReport() {
+    if (!curS) return;
+    const m = curS.markahSediaAda || {};
+    const tot = m.total || 0;
+    
+    document.getElementById('printArea').innerHTML = `
+        <div class="p-8 font-sans">
+            <h2 class="text-center font-bold text-xl mb-1">IPG KAMPUS DARULAMAN</h2>
+            <h3 class="text-center font-bold text-sm mb-4">DOSSIER PEMARKAHAN MPU7011 (PENGURUSAN KOKURIKULUM)</h3>
+            <div class="border p-4 mb-4 text-xs space-y-1">
+                <div><strong>NAMA:</strong> ${curS.Nama_Pelajar}</div>
+                <div><strong>NO. KP:</strong> ${curS.No_KP}</div>
+                <div><strong>KELAS:</strong> ${curS.Kelas}</div>
+            </div>
+            <table class="w-full border-collapse border text-xs text-center mb-6">
+                <thead>
+                    <tr class="bg-slate-100">
+                        <th class="border p-2">PEMARKAHAN MPU7011</th>
+                        <th class="border p-2">JUMLAH (100)</th>
+                        <th class="border p-2">GRED (100%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="border p-2 text-left">Pentaksiran Berterusan MPU7011</td>
+                        <td class="border p-2 font-bold">${tot}</td>
+                        <td class="border p-2 font-bold">${calcGred(tot)}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    `;
+    window.print();
+}
+
+function logout() { location.reload(); }
 </script>
 </body>
 </html>
