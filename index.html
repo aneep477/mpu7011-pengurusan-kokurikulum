@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal MPU7011 | Sistem Penilaian IPGKDA</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #1e3a8a; --primary-hover: #1e40af; --secondary: #9f1239;
+            --bg-body: #f8fafc; --bg-surface: #ffffff; --bg-alt: #f1f5f9;
+            --text-main: #0f172a; --text-muted: #64748b; --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg-body); min-height: 100vh; color: var(--text-main); }
+        .font-serif-title { font-family: 'Lora', serif; }
+        .font-mono-score { font-family: 'Space Mono', monospace; }
+        .academic-card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 0.75rem; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+        
+        .btn-primary { background: var(--primary); border: 1px solid var(--primary); cursor: pointer; transition: all 0.2s; color: white; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px; }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); background: #f8fafc; }
+
+        .s-card { padding: 12px 14px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 0.5rem; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; border-left: 4px solid transparent; }
+        .s-card:hover { background: var(--bg-alt); border-left-color: #94a3b8; }
+        .s-card.selected { background: #eff6ff; border-left-color: var(--primary); }
+        .s-card.done { border-left-color: #10b981; }
+
+        .nav-btn { background:transparent; border:none; padding:10px 16px; font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; border-bottom:3px solid transparent; cursor:pointer; white-space:nowrap; }
+        .nav-btn.active { color:var(--primary); border-bottom-color:var(--primary); }
+
+        input[type=number], input[type=text], input[type=password], select { background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-main); outline: none; transition: all 0.2s; border-radius: 0.5rem; padding: 0.6rem 0.8rem; }
+        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1); }
+
+        .score-row { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: white; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 12px; border-left: 5px solid transparent; }
+        .score-input { width: 80px; text-align: center; font-weight: 900; font-size: 20px; padding: 8px; border-radius: 6px; border: 1px solid var(--border); }
+
+        @media print { body * { visibility: hidden; } #printArea, #printArea * { visibility: visible; } #printArea { position: absolute; left: 0; top: 0; width: 100%; } }
+    </style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" class="shell flex items-center justify-center min-h-screen p-6">
+    <div class="academic-card w-full shadow-2xl p-8 sm:p-10 border-t-4" style="max-width:440px; border-top-color: var(--primary);">
+        <div class="text-center mb-8">
+            <img src="https://lh3.googleusercontent.com/d/10kap54x0sqPu4bFZdju9P2fXKMpyMVi8" alt="Logo IPGKDA" class="h-20 mx-auto mb-4">
+            <h1 class="font-serif-title text-2xl font-bold text-slate-800">Portal Pemarkahan</h1>
+            <p class="text-xs text-slate-500 font-medium mt-1">MPU7011 — Pengurusan Kokurikulum</p>
+        </div>
+        <div class="flex gap-2 mb-6 bg-slate-100 p-1 rounded-lg">
+            <button class="flex-1 py-2 text-xs font-bold uppercase rounded-md bg-white text-blue-900 shadow-sm" onclick="setLoginMode('student')" id="btnTabS">Pelajar</button>
+            <button class="flex-1 py-2 text-xs font-bold uppercase rounded-md text-slate-500" onclick="setLoginMode('lecturer')" id="btnTabL">Pensyarah</button>
+        </div>
+        <div class="flex flex-col gap-4 mb-6">
+            <input type="text" id="idIn" placeholder="No. KP Pelajar" class="w-full text-center font-mono-score">
+            <input type="password" id="pwIn" placeholder="Kata Laluan Pensyarah" class="w-full text-center" style="display:none;">
+        </div>
+        <button onclick="handleAuth()" class="btn-primary w-full rounded-lg p-3.5 text-xs">Log Masuk Sistem</button>
+    </div>
+</div>
+
+<!-- DASHBOARD PELAJAR -->
+<div id="studentDash" style="display:none;" class="min-h-screen flex-col bg-slate-50">
+    <div class="bg-white border-b px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+        <h2 class="font-serif-title font-bold text-lg text-slate-800">Ruang Pelajar</h2>
+        <button onclick="logout()" class="btn-outline px-3 py-1.5 rounded-lg">Log Keluar</button>
+    </div>
+    <div class="p-6 max-w-4xl mx-auto w-full">
+        <div class="academic-card p-6 mb-6">
+            <div class="flex items-center gap-4 mb-4 border-b pb-4">
+                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-2xl text-slate-400"><i class="fas fa-user-graduate"></i></div>
+                <div>
+                    <h3 id="sN" class="font-bold text-xl text-slate-800">--</h3>
+                    <p id="sK" class="text-xs text-slate-500 font-mono-score">--</p>
+                </div>
+                <div class="ml-auto text-right">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase">Kelas</div>
+                    <div id="sC" class="font-bold text-blue-900">--</div>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-slate-50 p-4 rounded-lg border">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase">Kumpulan</div>
+                    <div id="sKumpulan" class="font-bold text-lg">--</div>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-lg border">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase">No. Dalam Kumpulan</div>
+                    <div id="sNoKumpulan" class="font-bold text-lg">--</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="academic-card p-6">
+            <h3 class="font-bold text-lg text-slate-800 mb-4 border-b pb-2">Penilaian Rakan Sekumpulan (HP8)</h3>
+            <p class="text-xs text-slate-500 mb-4">Berikan markah 1 (Sangat Lemah) hingga 5 (Sangat Cemerlang) berdasarkan kriteria rubrik.</p>
+            <div id="peerListContainer"></div>
+        </div>
+    </div>
+</div>
+
+<!-- DASHBOARD PENSYARAH -->
+<div id="lecturerDash" style="display:none;" class="min-h-screen flex-col">
+    <div class="bg-blue-900 text-white px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <i class="fas fa-chalkboard-teacher text-xl"></i>
+            <div>
+                <div class="text-[10px] font-bold tracking-widest text-blue-300 uppercase">Pensyarah MPU7011</div>
+                <div id="lecName" class="font-serif-title font-bold">--</div>
+            </div>
+        </div>
+        <button onclick="logout()" class="btn-outline border-white text-white hover:bg-blue-800 px-3 py-1.5 rounded-lg">Keluar</button>
+    </div>
+
+    <div class="bg-white border-b px-6 pt-3">
+        <div class="flex gap-2 overflow-x-auto">
+            <button class="nav-btn active" onclick="showLecTab('marking', event)">Pemarkahan Induk</button>
+            <button class="nav-btn" onclick="showLecTab('peer', event)">Analisis Rakan (HP8)</button>
+        </div>
+    </div>
+
+    <div class="p-6 grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 flex-1">
+        <!-- Sidebar Pelajar -->
+        <div class="academic-card p-4 sticky top-24 self-start max-h-[calc(100vh-120px)] flex flex-col">
+            <div class="text-xs font-bold uppercase mb-3 text-slate-700">Senarai Pelajar</div>
+            <select id="classFilter" onchange="filterStudents()" class="w-full text-xs font-bold bg-slate-50 border rounded mb-2">
+                <option value="">Semua Kelas</option>
+            </select>
+            <input type="text" id="searchStudent" placeholder="Cari nama..." class="w-full text-xs bg-slate-50 border rounded mb-3" onkeyup="filterStudents()">
+            <div id="sList" class="overflow-y-auto flex-1 pr-1"></div>
+        </div>
+
+        <div class="min-w-0">
+            <!-- TAB 1: PEMARKAHAN -->
+            <div id="ltab-marking">
+                <div id="gradingEmpty" class="academic-card p-12 text-center border-dashed border-2 bg-slate-50 min-h-[400px] flex items-center justify-center">
+                    <div class="text-slate-400">
+                        <i class="fas fa-hand-pointer text-4xl mb-3"></i>
+                        <h4 class="font-serif-title text-lg font-bold text-slate-700">Modul Pemarkahan MPU7011</h4>
+                        <p class="text-xs">Sila pilih pelajar dari senarai kiri.</p>
+                    </div>
+                </div>
+                <div id="gradingPanel" style="display:none;" class="fade-in">
+                    <div class="academic-card p-5 mb-6 border-l-4 border-blue-900">
+                        <h2 id="ln" class="font-serif-title text-xl font-bold text-slate-800">--</h2>
+                        <p id="lk" class="text-xs text-slate-500 font-mono-score mt-1">--</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div class="score-row" style="border-left-color: #8b5cf6;"><div><div class="font-bold text-sm">Ujian (HPK2)</div><div class="text-[10px] text-slate-500">Max: 20</div></div><input type="number" id="score_hpp2" class="score-input" oninput="calcTotal()"></div>
+                        <div class="score-row" style="border-left-color: #10b981;"><div><div class="font-bold text-sm">Penganjuran HP8</div><div class="text-[10px] text-slate-500">Max: 30</div></div><input type="number" id="score_hpp8" class="score-input" oninput="calcTotal()"></div>
+                        <div class="score-row" style="border-left-color: #0ea5e9;"><div><div class="font-bold text-sm">Penganjuran HP9</div><div class="text-[10px] text-slate-500">Max: 20</div></div><input type="number" id="score_hpp9" class="score-input" oninput="calcTotal()"></div>
+                        <div class="score-row" style="border-left-color: #f59e0b;"><div><div class="font-bold text-sm">Penulisan HP5</div><div class="text-[10px] text-slate-500">Max: 30</div></div><input type="number" id="score_hpp5" class="score-input" oninput="calcTotal()"></div>
+                    </div>
+                    <div class="academic-card p-5 bg-slate-900 text-white flex justify-between items-center mb-6">
+                        <div class="text-sm uppercase tracking-wider">Jumlah Keseluruhan</div>
+                        <div class="text-4xl font-mono-score text-blue-400"><span id="totalScore">0.0</span> <span class="text-lg text-slate-400">/ 100</span></div>
+                    </div>
+                    <button class="btn-primary w-full py-3.5 rounded-lg text-xs" onclick="simulateSave(event)">Simpan Markah</button>
+                </div>
+            </div>
+
+            <!-- TAB 2: ANALISIS RAKAN (RADAR CHART) -->
+            <div id="ltab-peer" style="display:none;">
+                <div id="peerEmpty" class="academic-card p-12 text-center border-dashed border-2 bg-slate-50 min-h-[400px] flex items-center justify-center">
+                    <div class="text-slate-400">
+                        <i class="fas fa-radar text-4xl mb-3"></i>
+                        <h4 class="font-serif-title text-lg font-bold text-slate-700">Analisis Penilaian Rakan</h4>
+                        <p class="text-xs">Pilih pelajar untuk melihat radar chart penilaian HP8.</p>
+                    </div>
+                </div>
+                <div id="peerPanel" style="display:none;" class="fade-in academic-card p-6">
+                    <h3 class="font-serif-title text-lg font-bold mb-4 border-b pb-2">Penilaian 360 Darjah: <span id="peer_name_disp" class="text-blue-900"></span></h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
+                        <div class="relative w-full h-80"><canvas id="radarChart"></canvas></div>
+                        <div>
+                            <h4 class="text-xs font-bold uppercase text-slate-500 mb-3">Purata Skor Mengikut Dimensi (1-5)</h4>
+                            <div id="peerScoresList" class="space-y-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = "https://script.google.com/macros/s/AKfycbzLoLwfXXUwdV9xlsyItCVWezdDxY225jAV0fOCloj_g5rnZP6QiwbdJGe7jj0ZgShcVw/exec"; 
+    
+    let mode = 'student';
+    let currentUser = null;
+    let currentLecturerEmail = "";
+    let allStudents = [];
+    let selectedStudent = null;
+    let radarChart = null;
+
+    function setLoginMode(m) {
+        mode = m;
+        document.getElementById('btnTabS').className = m === 'student' ? 'flex-1 py-2 text-xs font-bold uppercase rounded-md bg-white text-blue-900 shadow-sm' : 'flex-1 py-2 text-xs font-bold uppercase rounded-md text-slate-500';
+        document.getElementById('btnTabL').className = m === 'lecturer' ? 'flex-1 py-2 text-xs font-bold uppercase rounded-md bg-white text-blue-900 shadow-sm' : 'flex-1 py-2 text-xs font-bold uppercase rounded-md text-slate-500';
+        document.getElementById('idIn').placeholder = m === 'student' ? 'No. KP Pelajar' : 'Emel Pensyarah';
+        document.getElementById('pwIn').style.display = m === 'student' ? 'none' : 'block';
+    }
+
+    async function handleAuth() {
+        const id = document.getElementById('idIn').value;
+        const pw = document.getElementById('pwIn').value;
+        if(!id) return alert("Sila masukkan maklumat.");
+        
+        if (mode === 'student') {
+            const res = await fetch(`${API}?action=checkLogin&noKP=${encodeURIComponent(id)}`);
+            const data = await res.json();
+            if (data.status === "success") {
+                currentUser = data.data;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('studentDash').style.display = 'flex';
+                
+                document.getElementById('sN').textContent = currentUser.Nama_Pelajar;
+                document.getElementById('sK').textContent = `KP: ${currentUser.No_KP}`;
+                document.getElementById('sC').textContent = currentUser.Kelas;
+                document.getElementById('sKumpulan').textContent = currentUser.No_Kumpulan || '-';
+                document.getElementById('sNoKumpulan').textContent = currentUser.No_Dalam_Kumpulan || '-';
+                
+                loadPeerGroup();
+            } else alert(data.message);
+        } else {
+            if(!pw) return alert("Sila masukkan kata laluan.");
+            const res = await fetch(`${API}?action=lecturerLogin&email=${encodeURIComponent(id)}&pass=${encodeURIComponent(pw)}`);
+            const data = await res.json();
+            if (data.status === "success") {
+                currentLecturerEmail = data.email;
+                document.getElementById('lecName').textContent = data.name;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('lecturerDash').style.display = 'flex';
+                fetchStudents();
+            } else alert(data.message);
+        }
+    }
+
+    function showLecTab(tab, evt) {
+        document.getElementById('ltab-marking').style.display = tab === 'marking' ? 'block' : 'none';
+        document.getElementById('ltab-peer').style.display = tab === 'peer' ? 'block' : 'none';
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        if(evt) evt.currentTarget.classList.add('active');
+        if(tab === 'peer' && selectedStudent) loadPeerRadar(selectedStudent.No_KP, selectedStudent.Nama_Pelajar);
+    }
+
+    // --- LOGIK PENSYARAH ---
+    async function fetchStudents() {
+        const res = await fetch(`${API}?action=getLecturerStudents&email=${encodeURIComponent(currentLecturerEmail)}`);
+        const data = await res.json();
+        if (data.status === "success") {
+            allStudents = data.data;
+            const classes = [...new Set(allStudents.map(s => s.Kelas))].sort();
+            document.getElementById('classFilter').innerHTML = '<option value="">Semua Kelas</option>' + classes.map(k => `<option value="${k}">${k}</option>`).join('');
+            renderList();
+        }
+    }
+
+    function renderList() {
+        const q = document.getElementById('searchStudent').value.toLowerCase();
+        const c = document.getElementById('classFilter').value;
+        const filtered = allStudents.filter(s => (s.Nama_Pelajar.toLowerCase().includes(q) || s.No_KP.includes(q)) && (!c || s.Kelas === c));
+        document.getElementById('sList').innerHTML = filtered.map(s => `
+            <div class="s-card ${s.markahSediaAda?'done':''}" onclick="selectStudent('${s.No_KP}')">
+                <div class="font-bold text-xs text-slate-800">${s.Nama_Pelajar}</div>
+                <div class="text-[10px] text-slate-500 font-mono-score mt-0.5">${s.Kelas} • Kumpulan ${s.Kumpulan || '-'}</div>
+            </div>
+        `).join('') || `<div class="text-xs text-center text-slate-400 p-4">Tiada pelajar.</div>`;
+    }
+
+    function filterStudents() { renderList(); }
+
+    function selectStudent(kp) {
+        selectedStudent = allStudents.find(s => s.No_KP === kp);
+        if(!selectedStudent) return;
+        
+        document.querySelectorAll('.s-card').forEach(el => el.classList.remove('selected'));
+        event.currentTarget.classList.add('selected');
+
+        // Kemas kini UI Markah
+        document.getElementById('gradingEmpty').style.display = 'none';
+        document.getElementById('gradingPanel').style.display = 'block';
+        document.getElementById('ln').textContent = selectedStudent.Nama_Pelajar;
+        document.getElementById('lk').textContent = `${selectedStudent.Kelas} | Kumpulan ${selectedStudent.Kumpulan || '-'}`;
+        
+        const m = selectedStudent.markahSediaAda;
+        document.getElementById('score_hpp2').value = m ? m.hpp2 : '';
+        document.getElementById('score_hpp8').value = m ? m.hpp8 : '';
+        document.getElementById('score_hpp9').value = m ? m.hpp9 : '';
+        document.getElementById('score_hpp5').value = m ? m.hpp5 : '';
+        calcTotal();
+
+        // Kemas kini UI Peer (jika tab peer aktif)
+        if(document.getElementById('ltab-peer').style.display === 'block') {
+            loadPeerRadar(selectedStudent.No_KP, selectedStudent.Nama_Pelajar);
+        }
+    }
+
+    function calcTotal() {
+        const hpp2 = parseFloat(document.getElementById('score_hpp2').value) || 0;
+        const hpp8 = parseFloat(document.getElementById('score_hpp8').value) || 0;
+        const hpp9 = parseFloat(document.getElementById('score_hpp9').value) || 0;
+        const hpp5 = parseFloat(document.getElementById('score_hpp5').value) || 0;
+        document.getElementById('totalScore').textContent = (hpp2 + hpp8 + hpp9 + hpp5).toFixed(1);
+    }
+
+    async function simulateSave(event) {
+        if(!selectedStudent) return;
+        const btn = event.target;
+        btn.disabled = true; btn.textContent = 'Menyimpan...';
+        const payload = {
+            action: "submitScores", noKP: selectedStudent.No_KP, nama: selectedStudent.Nama_Pelajar, kelas: selectedStudent.Kelas,
+            hpp2: parseFloat(document.getElementById('score_hpp2').value)||0, hpp8: parseFloat(document.getElementById('score_hpp8').value)||0,
+            hpp9: parseFloat(document.getElementById('score_hpp9').value)||0, hpp5: parseFloat(document.getElementById('score_hpp5').value)||0,
+            justifikasi: "-", pensyarah: currentLecturerEmail
+        };
+        try {
+            await fetch(API, { method: "POST", body: JSON.stringify(payload) });
+            alert("Markah disimpan!"); fetchStudents();
+        } catch (e) { alert("Gagal."); }
+        btn.disabled = false; btn.textContent = 'Simpan Markah';
+    }
+
+    // --- LOGIK PEER EVAL (PENSYARAH LIHAT RADAR) ---
+    async function loadPeerRadar(kp, nama) {
+        document.getElementById('peerEmpty').style.display = 'none';
+        document.getElementById('peerPanel').style.display = 'block';
+        document.getElementById('peer_name_disp').textContent = nama;
+
+        const res = await fetch(`${API}?action=getLecturerPeerData&noKP=${encodeURIComponent(kp)}`);
+        const data = await res.json();
+        
+        const count = data.count || 0;
+        const avgs = data.avgs || [0,0,0,0,0];
+        const questions = data.questions || [];
+
+        if(count === 0) {
+            document.getElementById('peerScoresList').innerHTML = `<div class="text-xs text-slate-500 italic">Tiada penilaian rakan sebaya diterima lagi.</div>`;
+        } else {
+            document.getElementById('peerScoresList').innerHTML = questions.map((q, i) => `
+                <div class="flex justify-between items-center bg-slate-50 p-2 rounded border">
+                    <span class="text-xs font-bold text-slate-700">${q.title}</span>
+                    <span class="text-sm font-mono-score font-bold text-blue-900">${avgs[i]} / 5.0</span>
+                </div>
+            `).join('');
+        }
+
+        // Render Radar Chart
+        if(radarChart) radarChart.destroy();
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        radarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: questions.map(q => q.title),
+                datasets: [{
+                    label: 'Purata Skor Rakan',
+                    data: avgs,
+                    backgroundColor: 'rgba(30, 58, 138, 0.2)',
+                    borderColor: 'rgba(30, 58, 138, 1)',
+                    pointBackgroundColor: 'rgba(30, 58, 138, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                scales: { r: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } } },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    // --- LOGIK PELAJAR (PEER EVAL) ---
+    async function loadPeerGroup() {
+        const res = await fetch(`${API}?action=getPeerGroups&kelas=${encodeURIComponent(currentUser.Kelas)}&kumpulan=${encodeURIComponent(currentUser.No_Kumpulan)}&noKP=${encodeURIComponent(currentUser.No_KP)}`);
+        const data = await res.json();
+        
+        if(data.status === "success") {
+            const list = document.getElementById('peerListContainer');
+            if(data.data.length === 0) {
+                list.innerHTML = `<div class="text-xs text-slate-500">Tiada rakan dalam kumpulan ini.</div>`;
+                return;
+            }
+            list.innerHTML = data.data.map(p => `
+                <div class="mb-6 pb-4 border-b">
+                    <div class="font-bold text-sm text-blue-900 mb-3">${p.No_Dalam_Kumpulan}. ${p.Nama_Pelajar}</div>
+                    <div class="space-y-3">
+                        ${data.questions.map(q => `
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 bg-slate-50 p-3 rounded border">
+                                <div class="text-xs font-bold text-slate-700">${q.title}</div>
+                                <div class="flex gap-2">
+                                    ${[1,2,3,4,5].map(v => `<button onclick="setPeerScore('${p.No_KP}', '${q.id}', ${v}, this)" class="w-10 h-10 rounded-md border border-slate-300 font-bold bg-white hover:bg-slate-100">${v}</button>`).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+
+    function setPeerScore(targetKP, qId, val, btn) {
+        // Highlight butang
+        const parent = btn.parentElement;
+        Array.from(parent.children).forEach(b => b.className = 'w-10 h-10 rounded-md border border-slate-300 font-bold bg-white hover:bg-slate-100');
+        btn.className = 'w-10 h-10 rounded-md border border-blue-900 font-bold bg-blue-900 text-white';
+
+        // Simpan logik sementara (boleh tambah butang submit pukal nanti)
+        // Untuk ringkas, kita biarkan UI sahaja buat masa ini.
+    }
+
+    function logout() { location.reload(); }
+</script>
+</body>
+</html>
