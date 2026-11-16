@@ -668,7 +668,6 @@ function renderDynamicGradingCards() {
     const container = document.getElementById('dynamicMarkingCards');
     if (!container) return;
 
-    // Logik Susunan: Tugasan 1 (Ujian), Tugasan 2 (Penganjuran), Tugasan 3 (Penulisan)
     container.innerHTML = currentConfig.map((t) => {
         let tMax = t.hppList.reduce((sum, h) => sum + Number(h.max), 0);
         let inputs = t.hppList.map(hpp => `
