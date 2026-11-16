@@ -47,7 +47,7 @@
 <body>
 
 <!-- LOGIN SCREEN -->
-<div id="loginScreen" class="shell flex items-center justify-center min-h-screen p-6">
+<div id="loginScreen" class="flex items-center justify-center min-h-screen p-6">
     <div class="academic-card w-full shadow-2xl p-8 sm:p-10 border-t-4" style="max-width:440px; border-top-color: var(--primary);">
         <div class="text-center mb-8">
             <img src="https://lh3.googleusercontent.com/d/10kap54x0sqPu4bFZdju9P2fXKMpyMVi8" alt="Logo IPGKDA" class="h-20 mx-auto mb-4">
@@ -72,34 +72,55 @@
         <h2 class="font-serif-title font-bold text-lg text-slate-800">Ruang Pelajar</h2>
         <button onclick="logout()" class="btn-outline px-3 py-1.5 rounded-lg">Log Keluar</button>
     </div>
-    <div class="p-6 max-w-4xl mx-auto w-full">
-        <div class="academic-card p-6 mb-6">
-            <div class="flex items-center gap-4 mb-4 border-b pb-4">
-                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-2xl text-slate-400"><i class="fas fa-user-graduate"></i></div>
-                <div>
-                    <h3 id="sN" class="font-bold text-xl text-slate-800">--</h3>
-                    <p id="sK" class="text-xs text-slate-500 font-mono-score">--</p>
+    <div class="p-6 max-w-5xl mx-auto w-full">
+        
+        <!-- PROFIL & UPLOAD GAMBAR -->
+        <div class="academic-card p-6 mb-6 flex flex-col md:flex-row gap-6 items-start">
+            <!-- Bahagian Gambar -->
+            <div class="w-full md:w-48 flex flex-col items-center shrink-0">
+                <div class="w-40 h-52 bg-slate-100 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden relative mb-3">
+                    <img id="sImg" class="w-full h-full object-cover hidden" alt="Gambar">
+                    <div id="sPl" class="text-center text-slate-400">
+                        <i class="fas fa-camera text-3xl mb-1"></i>
+                        <div class="text-[10px] font-bold uppercase">Tiada Gambar</div>
+                    </div>
                 </div>
-                <div class="ml-auto text-right">
-                    <div class="text-[10px] font-bold text-slate-400 uppercase">Kelas</div>
-                    <div id="sC" class="font-bold text-blue-900">--</div>
+                <input type="file" id="fIn" class="hidden" accept="image/*" onchange="pImg(this)">
+                <div class="flex gap-2 w-full">
+                    <button onclick="document.getElementById('fIn').click()" class="btn-outline flex-1 py-2 rounded text-[10px]">Pilih</button>
+                    <button id="uploadBtn" onclick="hUp()" class="btn-primary flex-1 py-2 rounded text-[10px]">Muat Naik</button>
                 </div>
             </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-slate-50 p-4 rounded-lg border">
-                    <div class="text-[10px] font-bold text-slate-400 uppercase">Kumpulan</div>
-                    <div id="sKumpulan" class="font-bold text-lg">--</div>
+
+            <!-- Bahagian Maklumat -->
+            <div class="flex-1 w-full">
+                <div class="flex items-center gap-4 mb-4 border-b pb-4">
+                    <div>
+                        <h3 id="sN" class="font-bold text-xl text-slate-800">--</h3>
+                        <p id="sK" class="text-xs text-slate-500 font-mono-score">--</p>
+                    </div>
+                    <div class="ml-auto text-right">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase">Kelas</div>
+                        <div id="sC" class="font-bold text-blue-900">--</div>
+                    </div>
                 </div>
-                <div class="bg-slate-50 p-4 rounded-lg border">
-                    <div class="text-[10px] font-bold text-slate-400 uppercase">No. Dalam Kumpulan</div>
-                    <div id="sNoKumpulan" class="font-bold text-lg">--</div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-50 p-4 rounded-lg border">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase">Kumpulan</div>
+                        <div id="sKumpulan" class="font-bold text-lg text-blue-900">--</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg border">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase">No. Dalam Kumpulan</div>
+                        <div id="sNoKumpulan" class="font-bold text-lg text-blue-900">--</div>
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- PENILAIAN RAKAN -->
         <div class="academic-card p-6">
-            <h3 class="font-bold text-lg text-slate-800 mb-4 border-b pb-2">Penilaian Rakan Sekumpulan (HP8)</h3>
-            <p class="text-xs text-slate-500 mb-4">Berikan markah 1 (Sangat Lemah) hingga 5 (Sangat Cemerlang) berdasarkan kriteria rubrik.</p>
+            <h3 class="font-bold text-lg text-slate-800 mb-2 border-b pb-2">Penilaian Rakan Sekumpulan (HP8)</h3>
+            <p class="text-xs text-slate-500 mb-6">Berikan markah 1 (Sangat Lemah) hingga 5 (Sangat Cemerlang) berdasarkan kriteria rubrik.</p>
             <div id="peerListContainer"></div>
         </div>
     </div>
@@ -126,7 +147,6 @@
     </div>
 
     <div class="p-6 grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 flex-1">
-        <!-- Sidebar Pelajar -->
         <div class="academic-card p-4 sticky top-24 self-start max-h-[calc(100vh-120px)] flex flex-col">
             <div class="text-xs font-bold uppercase mb-3 text-slate-700">Senarai Pelajar</div>
             <select id="classFilter" onchange="filterStudents()" class="w-full text-xs font-bold bg-slate-50 border rounded mb-2">
@@ -137,7 +157,6 @@
         </div>
 
         <div class="min-w-0">
-            <!-- TAB 1: PEMARKAHAN -->
             <div id="ltab-marking">
                 <div id="gradingEmpty" class="academic-card p-12 text-center border-dashed border-2 bg-slate-50 min-h-[400px] flex items-center justify-center">
                     <div class="text-slate-400">
@@ -165,7 +184,6 @@
                 </div>
             </div>
 
-            <!-- TAB 2: ANALISIS RAKAN (RADAR CHART) -->
             <div id="ltab-peer" style="display:none;">
                 <div id="peerEmpty" class="academic-card p-12 text-center border-dashed border-2 bg-slate-50 min-h-[400px] flex items-center justify-center">
                     <div class="text-slate-400">
@@ -190,6 +208,7 @@
 </div>
 
 <script>
+    // PASTIKAN URL INI ADALAH URL DEPLOYMENT ANDA YANG TERKINI
     const API = "https://script.google.com/macros/s/AKfycbzLoLwfXXUwdV9xlsyItCVWezdDxY225jAV0fOCloj_g5rnZP6QiwbdJGe7jj0ZgShcVw/exec"; 
     
     let mode = 'student';
@@ -223,8 +242,18 @@
                 document.getElementById('sN').textContent = currentUser.Nama_Pelajar;
                 document.getElementById('sK').textContent = `KP: ${currentUser.No_KP}`;
                 document.getElementById('sC').textContent = currentUser.Kelas;
-                document.getElementById('sKumpulan').textContent = currentUser.No_Kumpulan || '-';
+                
+                // Papar Kumpulan & No
+                document.getElementById('sKumpulan').textContent = currentUser.Kumpulan || '-';
                 document.getElementById('sNoKumpulan').textContent = currentUser.No_Dalam_Kumpulan || '-';
+                
+                if (currentUser.Link_Gambar) {
+                    const img = document.getElementById('sImg');
+                    let driveId = currentUser.Link_Gambar.match(/\/d\/([a-zA-Z0-9_-]+)/)?.[1] || currentUser.Link_Gambar.match(/[?&]id=([a-zA-Z0-9_-]+)/)?.[1];
+                    img.src = driveId ? `https://lh3.googleusercontent.com/d/${driveId}` : currentUser.Link_Gambar;
+                    img.style.display = 'block';
+                    document.getElementById('sPl').style.display = 'none';
+                }
                 
                 loadPeerGroup();
             } else alert(data.message);
@@ -242,12 +271,76 @@
         }
     }
 
-    function showLecTab(tab, evt) {
-        document.getElementById('ltab-marking').style.display = tab === 'marking' ? 'block' : 'none';
-        document.getElementById('ltab-peer').style.display = tab === 'peer' ? 'block' : 'none';
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        if(evt) evt.currentTarget.classList.add('active');
-        if(tab === 'peer' && selectedStudent) loadPeerRadar(selectedStudent.No_KP, selectedStudent.Nama_Pelajar);
+    // --- LOGIK UPLOAD GAMBAR PELAJAR ---
+    function pImg(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById('sImg');
+                img.src = e.target.result;
+                img.style.display = 'block';
+                document.getElementById('sPl').style.display = 'none';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    async function hUp() {
+        const fileInput = document.getElementById('fIn');
+        if (!fileInput.files || !fileInput.files[0]) return alert("Sila pilih gambar dahulu.");
+        const file = fileInput.files[0];
+        if (file.size > 2 * 1024 * 1024) return alert("Saiz gambar terhad kepada 2MB.");
+
+        const btn = document.getElementById('uploadBtn');
+        btn.disabled = true; btn.textContent = 'Memuat...';
+
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            const payload = { action: "uploadImage", noKP: currentUser.No_KP, imageData: e.target.result, fileName: `MPU7011_${currentUser.No_KP}_${file.name}` };
+            try {
+                const res = await fetch(API, { method: "POST", body: JSON.stringify(payload) });
+                const result = await res.json();
+                if (result.status === "success") alert("Gambar berjaya dimuat naik!");
+                else alert("Ralat: " + result.message);
+            } catch (err) { alert("Gagal memuat naik gambar."); }
+            btn.disabled = false; btn.textContent = 'Muat Naik';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // --- LOGIK PEER EVAL PELAJAR ---
+    async function loadPeerGroup() {
+        const res = await fetch(`${API}?action=getPeerGroups&kelas=${encodeURIComponent(currentUser.Kelas)}&kumpulan=${encodeURIComponent(currentUser.Kumpulan)}&noKP=${encodeURIComponent(currentUser.No_KP)}`);
+        const data = await res.json();
+        
+        if(data.status === "success") {
+            const list = document.getElementById('peerListContainer');
+            if(data.data.length === 0) {
+                list.innerHTML = `<div class="text-xs text-slate-500">Tiada rakan dalam kumpulan ini (Sila pastikan Kumpulan & Kelas sama).</div>`;
+                return;
+            }
+            list.innerHTML = data.data.map(p => `
+                <div class="mb-6 pb-4 border-b">
+                    <div class="font-bold text-sm text-blue-900 mb-3">${p.No_Dalam_Kumpulan || '-'}. ${p.Nama_Pelajar}</div>
+                    <div class="space-y-3">
+                        ${data.questions.map(q => `
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 bg-slate-50 p-3 rounded border">
+                                <div class="text-xs font-bold text-slate-700">${q.title}</div>
+                                <div class="flex gap-2">
+                                    ${[1,2,3,4,5].map(v => `<button onclick="setPeerScore('${p.No_KP}', '${q.id}', ${v}, this)" class="w-10 h-10 rounded-md border border-slate-300 font-bold bg-white hover:bg-slate-100">${v}</button>`).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+
+    function setPeerScore(targetKP, qId, val, btn) {
+        const parent = btn.parentElement;
+        Array.from(parent.children).forEach(b => b.className = 'w-10 h-10 rounded-md border border-slate-300 font-bold bg-white hover:bg-slate-100');
+        btn.className = 'w-10 h-10 rounded-md border border-blue-900 font-bold bg-blue-900 text-white';
     }
 
     // --- LOGIK PENSYARAH ---
@@ -267,7 +360,7 @@
         const c = document.getElementById('classFilter').value;
         const filtered = allStudents.filter(s => (s.Nama_Pelajar.toLowerCase().includes(q) || s.No_KP.includes(q)) && (!c || s.Kelas === c));
         document.getElementById('sList').innerHTML = filtered.map(s => `
-            <div class="s-card ${s.markahSediaAda?'done':''}" onclick="selectStudent('${s.No_KP}')">
+            <div class="s-card ${s.markahSediaAda?'done':''}" onclick="selectStudent('${s.No_KP}', event)">
                 <div class="font-bold text-xs text-slate-800">${s.Nama_Pelajar}</div>
                 <div class="text-[10px] text-slate-500 font-mono-score mt-0.5">${s.Kelas} • Kumpulan ${s.Kumpulan || '-'}</div>
             </div>
@@ -276,14 +369,13 @@
 
     function filterStudents() { renderList(); }
 
-    function selectStudent(kp) {
+    function selectStudent(kp, evt) {
         selectedStudent = allStudents.find(s => s.No_KP === kp);
         if(!selectedStudent) return;
         
         document.querySelectorAll('.s-card').forEach(el => el.classList.remove('selected'));
-        event.currentTarget.classList.add('selected');
+        if(evt) evt.currentTarget.classList.add('selected');
 
-        // Kemas kini UI Markah
         document.getElementById('gradingEmpty').style.display = 'none';
         document.getElementById('gradingPanel').style.display = 'block';
         document.getElementById('ln').textContent = selectedStudent.Nama_Pelajar;
@@ -296,7 +388,6 @@
         document.getElementById('score_hpp5').value = m ? m.hpp5 : '';
         calcTotal();
 
-        // Kemas kini UI Peer (jika tab peer aktif)
         if(document.getElementById('ltab-peer').style.display === 'block') {
             loadPeerRadar(selectedStudent.No_KP, selectedStudent.Nama_Pelajar);
         }
@@ -308,6 +399,14 @@
         const hpp9 = parseFloat(document.getElementById('score_hpp9').value) || 0;
         const hpp5 = parseFloat(document.getElementById('score_hpp5').value) || 0;
         document.getElementById('totalScore').textContent = (hpp2 + hpp8 + hpp9 + hpp5).toFixed(1);
+    }
+
+    function showLecTab(tab, evt) {
+        document.getElementById('ltab-marking').style.display = tab === 'marking' ? 'block' : 'none';
+        document.getElementById('ltab-peer').style.display = tab === 'peer' ? 'block' : 'none';
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        if(evt) evt.currentTarget.classList.add('active');
+        if(tab === 'peer' && selectedStudent) loadPeerRadar(selectedStudent.No_KP, selectedStudent.Nama_Pelajar);
     }
 
     async function simulateSave(event) {
@@ -327,7 +426,6 @@
         btn.disabled = false; btn.textContent = 'Simpan Markah';
     }
 
-    // --- LOGIK PEER EVAL (PENSYARAH LIHAT RADAR) ---
     async function loadPeerRadar(kp, nama) {
         document.getElementById('peerEmpty').style.display = 'none';
         document.getElementById('peerPanel').style.display = 'block';
@@ -351,7 +449,6 @@
             `).join('');
         }
 
-        // Render Radar Chart
         if(radarChart) radarChart.destroy();
         const ctx = document.getElementById('radarChart').getContext('2d');
         radarChart = new Chart(ctx, {
@@ -372,45 +469,6 @@
                 plugins: { legend: { display: false } }
             }
         });
-    }
-
-    // --- LOGIK PELAJAR (PEER EVAL) ---
-    async function loadPeerGroup() {
-        const res = await fetch(`${API}?action=getPeerGroups&kelas=${encodeURIComponent(currentUser.Kelas)}&kumpulan=${encodeURIComponent(currentUser.No_Kumpulan)}&noKP=${encodeURIComponent(currentUser.No_KP)}`);
-        const data = await res.json();
-        
-        if(data.status === "success") {
-            const list = document.getElementById('peerListContainer');
-            if(data.data.length === 0) {
-                list.innerHTML = `<div class="text-xs text-slate-500">Tiada rakan dalam kumpulan ini.</div>`;
-                return;
-            }
-            list.innerHTML = data.data.map(p => `
-                <div class="mb-6 pb-4 border-b">
-                    <div class="font-bold text-sm text-blue-900 mb-3">${p.No_Dalam_Kumpulan}. ${p.Nama_Pelajar}</div>
-                    <div class="space-y-3">
-                        ${data.questions.map(q => `
-                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 bg-slate-50 p-3 rounded border">
-                                <div class="text-xs font-bold text-slate-700">${q.title}</div>
-                                <div class="flex gap-2">
-                                    ${[1,2,3,4,5].map(v => `<button onclick="setPeerScore('${p.No_KP}', '${q.id}', ${v}, this)" class="w-10 h-10 rounded-md border border-slate-300 font-bold bg-white hover:bg-slate-100">${v}</button>`).join('')}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `).join('');
-        }
-    }
-
-    function setPeerScore(targetKP, qId, val, btn) {
-        // Highlight butang
-        const parent = btn.parentElement;
-        Array.from(parent.children).forEach(b => b.className = 'w-10 h-10 rounded-md border border-slate-300 font-bold bg-white hover:bg-slate-100');
-        btn.className = 'w-10 h-10 rounded-md border border-blue-900 font-bold bg-blue-900 text-white';
-
-        // Simpan logik sementara (boleh tambah butang submit pukal nanti)
-        // Untuk ringkas, kita biarkan UI sahaja buat masa ini.
     }
 
     function logout() { location.reload(); }
