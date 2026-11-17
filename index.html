@@ -610,19 +610,26 @@ function calcGred(total100) {
     return "F";
 }
 
-function clampScore(el, maxVal) {
+/* Hadkan markah kepada 0..max. Semasa menaip, nilai TIDAK ditulis semula selagi ia dalam julat,
+   supaya titik perpuluhan (cth. 13.7) boleh ditaip. `final` = true semasa keluar dari kotak (blur). */
+function clampScore(el, maxVal, final) {
     maxVal = Number(maxVal);
-    let raw = el.value;
-    let v = parseFloat(raw);
+    const raw = el.value;
     if (raw === '') { el.classList.remove('at-max'); return; }
-    if (isNaN(v)) v = 0;
-    if (v < 0) { v = 0; flashInvalid(el); }
+    let v = parseFloat(String(raw).replace(',', '.'));
+    let changed = false;
+    if (isNaN(v)) { v = 0; changed = true; }
+    if (v < 0) { v = 0; changed = true; flashInvalid(el); }
     if (v > maxVal) {
-        v = maxVal;
+        v = maxVal; changed = true;
         flashInvalid(el);
         showToast(`Markah dihadkan kepada maksimum ${maxVal}m mengikut rubrik.`, 'warn');
     }
-    el.value = v;
+    if (final) {
+        const r = Math.round(v * 100) / 100;      // maksimum 2 tempat perpuluhan
+        if (r !== v) { v = r; changed = true; }
+    }
+    if (changed) el.value = v;
     el.classList.toggle('at-max', v === maxVal && maxVal > 0);
 }
 
@@ -770,10 +777,10 @@ function renderDynamicGradingCards() {
                     <label class="dim-label mb-0 text-blue-800">${hpp.nama}</label>
                     <span class="text-[10px] text-slate-400">Maksimum HPP: ${hpp.max}m</span>
                 </div>
-                <input type="number" id="inp_${hpp.id}" min="0" max="${hpp.max}" step="0.1"
+                <input type="number" id="inp_${hpp.id}" min="0" max="${hpp.max}" step="any" inputmode="decimal"
                     class="score-input w-20 font-mono-score text-center font-bold text-lg border-blue-200 text-blue-700 bg-white"
                     oninput="clampScore(this, ${hpp.max}); calc();"
-                    onblur="clampScore(this, ${hpp.max}); calc();">
+                    onblur="clampScore(this, ${hpp.max}, true); calc();">
             </div>
         `).join('');
 
@@ -883,10 +890,10 @@ async function renderRubrikUI() {
                             <div class="flex items-center gap-1">
                                 <input type="number" id="r_sub_${sub.id}" data-hpp="${hpp.id}" data-max="${sub.max}"
                                     value=""
-                                    max="${sub.max}" min="0" step="0.1"
+                                    max="${sub.max}" min="0" step="any" inputmode="decimal"
                                     class="score-input w-16 text-center font-bold text-xs bg-white border-blue-300"
                                     oninput="clampScore(this, ${sub.max}); calcRubrikHPP('${hpp.id}')"
-                                    onblur="clampScore(this, ${sub.max}); calcRubrikHPP('${hpp.id}')">
+                                    onblur="clampScore(this, ${sub.max}, true); calcRubrikHPP('${hpp.id}')">
                                 <span class="text-[10px] font-bold text-slate-400">/${sub.max}m</span>
                             </div>
                         </div>
@@ -934,7 +941,7 @@ function calcRubrikHPP(hppId) {
 
     const mainInp = document.getElementById(`inp_${hppId}`);
     if (mainInp) {
-        mainInp.value = sum.toFixed(1);
+        mainInp.value = String(Math.round(sum * 100) / 100);
         calc();
     }
 }
@@ -960,12 +967,12 @@ async function saveRubrik() {
             });
             if (filled) {
                 hppSum = Math.min(Number(hpp.max), hppSum);
-                if (mainInp) mainInp.value = hppSum.toFixed(1);
+                if (mainInp) mainInp.value = String(Math.round(hppSum * 100) / 100);
             } else {
                 // Sub-kriteria kosong / tiada: kekalkan markah induk sedia ada (jangan tulis 0)
                 hppSum = mainInp ? (Number(mainInp.value) || 0) : 0;
             }
-            payload.scores[hpp.id] = Math.round(hppSum * 10) / 10;
+            payload.scores[hpp.id] = Math.round(hppSum * 100) / 100;
         });
     });
 
@@ -1152,7 +1159,7 @@ function studentMarks(s) {
     currentConfig.forEach(t => t.hppList.forEach(h => {
         if (scores[h.id] !== undefined && scores[h.id] !== '') { has = true; tot += Number(scores[h.id]) || 0; }
     }));
-    tot = Math.round(tot * 10) / 10;
+    tot = Math.round(tot * 100) / 100;
     return { scores: scores, tot: tot, has: has, gred: has ? calcGred(tot) : '-', penilai: m.penilai || '' };
 }
 
